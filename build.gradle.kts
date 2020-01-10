@@ -13,7 +13,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    compile(project(":plist"))
+    compile(group = "org.jdom", name = "jdom2", version = "2.0.6")
 }
 
 tasks.withType<KotlinCompile> {
