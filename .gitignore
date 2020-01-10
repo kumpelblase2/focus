@@ -1,0 +1,5 @@
+example_files/
+*.class
+.gradle/
+/build/
+/plist/build/
