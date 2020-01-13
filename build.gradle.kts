@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.3.50"
+    kotlin("jvm") version "1.3.61"
 }
 
 group = "de.eternalwings"
@@ -13,7 +13,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    compile(group = "org.jdom", name = "jdom2", version = "2.0.6")
+    compile(project(":library"))
 }
 
 tasks.withType<KotlinCompile> {

@@ -49,7 +49,7 @@ data class Task(
             val due = element.date("due")
             val completed = element.date("completed")
             val flagged = element.boolean("flagged")
-            val completedByChildren = element.boolean("completed-by-children")!!
+            val completedByChildren = element.boolean("completed-by-children")
             val repetitionRule = element.text("repetition-rule")
             val repetitionMethod = element.text("repetition-method")
             val repeat = element.text("repeat")

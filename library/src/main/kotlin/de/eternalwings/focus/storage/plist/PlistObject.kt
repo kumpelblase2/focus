@@ -1,4 +1,4 @@
-package de.eternalwings.plist
+package de.eternalwings.focus.storage.plist
 
 import java.time.OffsetDateTime
 
@@ -21,3 +21,5 @@ data class ArrayObject(override val content: List<PlistObject<*>>) :
 data class DataObject(override val content: ByteArray) : PlistObject<ByteArray>
 
 data class IntegerObject(override val content: Int) : PlistObject<Int>
+
+data class BooleanObject(override val content: Boolean) : PlistObject<Boolean>

@@ -1,4 +1,4 @@
-package de.eternalwings.plist
+package de.eternalwings.focus.storage.plist
 
 import com.sun.org.apache.xml.internal.security.utils.Base64
 import org.jdom2.Element
@@ -11,17 +11,19 @@ object Plist {
         val builder = SAXBuilder()
         val content = builder.build(file.toFile())
         val plistContainer = content.rootElement
-        return parseChild(plistContainer.children.first())
+        return parsePlistElement(plistContainer.children.first())
     }
 
-    private fun parseChild(element: Element): PlistObject<*> {
+    fun parsePlistElement(element: Element): PlistObject<*> {
         return when(element.name) {
             "dict" -> DictionaryObject(element.children.chunked(2).map(Plist::createDictEntry).toMap())
-            "array" -> ArrayObject(element.children.map(Plist::parseChild))
+            "array" -> ArrayObject(element.children.map(Plist::parsePlistElement))
             "integer" -> IntegerObject(element.value.toInt())
             "data" -> DataObject(Base64.decode(element.value))
             "date" -> DateObject(OffsetDateTime.parse(element.value))
             "string" -> StringObject(element.value)
+            "true" -> BooleanObject(true)
+            "false" -> BooleanObject(false)
             else -> throw IllegalStateException("Unknown data type ${element.name}")
         }
     }
@@ -29,7 +31,7 @@ object Plist {
     private fun createDictEntry(entry: List<Element>): Pair<String, PlistObject<*>> {
         val key = entry[0]
         check(key.name == "key")
-        val value = parseChild(entry[1])
+        val value = parsePlistElement(entry[1])
         return key.value to value
     }
 }

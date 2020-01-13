@@ -23,6 +23,8 @@ data class OmniContainer(
             changes += element.getChildren("task-to-tag", NAMESPACE).map { TaskToTag.fromXML(it) }
             changes += element.getChildren("folder", NAMESPACE).map { Folder.fromXML(it) }
             changes += element.getChildren("context", NAMESPACE).map { Context.fromXML(it) }
+            changes += element.getChildren("setting", NAMESPACE).map { Setting.fromXML(it) }
+            changes += element.getChildren("perspective", NAMESPACE).map { Perspective.fromXML(it) }
 
             return OmniContainer(ContentCreator(appId, appVersion, osVersion, machineModel), changes)
         }

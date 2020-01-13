@@ -1,6 +1,6 @@
 package de.eternalwings.focus.storage
 
-import de.eternalwings.plist.DictionaryObject
+import de.eternalwings.focus.storage.plist.DictionaryObject
 import java.time.OffsetDateTime
 
 data class OmniCapability(

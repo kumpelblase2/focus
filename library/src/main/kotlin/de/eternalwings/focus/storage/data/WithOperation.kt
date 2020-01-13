@@ -7,7 +7,8 @@ interface WithOperation {
 enum class Operation {
     UPDATE,
     CREATE,
-    DELETE
+    DELETE,
+    REFERENCE
 }
 
 fun String.toOperation() : Operation {

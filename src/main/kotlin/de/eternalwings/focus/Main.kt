@@ -13,6 +13,8 @@ fun main(vararg args: String) {
     capabilities.forEach { println(it) }
     storage.providePassword(args[1].toCharArray())
     val content = storage.changeSets
-    val references = content[0].contentContainer.content
-    println("Elements: " + references.size)
+    content.forEach {
+        val references = it.contentContainer.content
+        println("Elements: " + references.size)
+    }
 }

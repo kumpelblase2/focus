@@ -20,15 +20,14 @@ data class Folder(
             val operation = element.attr("op")?.toOperation() ?: Operation.CREATE
             val id = element.attr("id")!!
             val parent = element.reference("folder")
-            val addedElement = element.getChild("added", OmniContainer.NAMESPACE)
-            val added = LocalDateTime.parse(addedElement.value, OmniContainer.TIME_FORMAT)
-            val addedOrder = addedElement.getAttribute("order")?.longValue
+            val added = element.date("added")
+            val order = element.child("added")?.attr("order")?.toLong()
             val name = element.text("name")
             val note = element.text("note")
             val rank = element.long("rank")
             val hidden = element.boolean("hidden")
             val modified = element.date("modified")
-            return Folder(id, parent, added, addedOrder, name, note, rank, hidden, modified, operation)
+            return Folder(id, parent, added, order, name, note, rank, hidden, modified, operation)
         }
     }
 }

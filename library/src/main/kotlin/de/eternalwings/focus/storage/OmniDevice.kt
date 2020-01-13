@@ -1,8 +1,8 @@
 package de.eternalwings.focus.storage
 
-import de.eternalwings.plist.ArrayObject
-import de.eternalwings.plist.DictionaryObject
-import de.eternalwings.plist.StringObject
+import de.eternalwings.focus.storage.plist.ArrayObject
+import de.eternalwings.focus.storage.plist.DictionaryObject
+import de.eternalwings.focus.storage.plist.StringObject
 import java.time.OffsetDateTime
 
 data class OmniDevice(
