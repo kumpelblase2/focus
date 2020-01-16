@@ -1,5 +1,6 @@
 package de.eternalwings.focus.storage.data
 
+import de.eternalwings.focus.Referencable
 import org.jdom2.Document
 import org.jdom2.Namespace
 import java.time.format.DateTimeFormatter

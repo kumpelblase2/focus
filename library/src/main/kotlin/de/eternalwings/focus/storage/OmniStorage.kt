@@ -9,8 +9,6 @@ interface OmniStorage {
     val devices: Collection<OmniDevice>
     val capabilities: Collection<OmniCapability>
     val changeSets: List<Changeset>
-    val latestChangeset: Changeset
-        get() = changeSets.asSequence().sortedBy { it.timestamp }.last()
 
     companion object {
         fun fromPath(path: Path): OmniStorage {

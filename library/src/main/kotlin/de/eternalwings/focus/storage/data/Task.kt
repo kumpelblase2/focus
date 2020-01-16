@@ -1,5 +1,7 @@
 package de.eternalwings.focus.storage.data
 
+import de.eternalwings.focus.Referencable
+import de.eternalwings.focus.Reference
 import org.jdom2.Element
 import java.time.LocalDateTime
 
@@ -40,7 +42,7 @@ data class Task(
             val addedOrder = addedElement?.attr("order")?.toLong()
             val parent = element.reference("task")
             val name = element.text("name")
-            val note = element.text("note")
+            val note = element.htmlText("note")
             val rank = element.long("rank")
             val contextReference = element.reference("context")
             val start = element.date("start")

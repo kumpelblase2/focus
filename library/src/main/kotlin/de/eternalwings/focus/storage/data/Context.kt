@@ -1,5 +1,7 @@
 package de.eternalwings.focus.storage.data
 
+import de.eternalwings.focus.Referencable
+import de.eternalwings.focus.Reference
 import org.jdom2.Element
 import java.time.LocalDateTime
 
@@ -26,7 +28,7 @@ data class Context(
             val added = addedElement?.value?.asDateTime()
             val addedOrder = addedElement?.attr("order")?.toLong()
             val name = element.text("name")
-            val note = element.text("note")
+            val note = element.htmlText("note")
             val rank = element.long("rank")
             val hidden = element.boolean("hidden")
             val prohibitsNextAction = element.boolean("prohibits-next-action")
@@ -59,31 +61,6 @@ data class Context(
         private fun String.asDateTime(): LocalDateTime? {
             if (this.isEmpty()) return null
             return LocalDateTime.parse(this, OmniContainer.TIME_FORMAT)
-        }
-    }
-}
-
-data class Location(
-    var name: String,
-    var latitude: String,
-    var longitude: String,
-    val radius: Int,
-    var notificationFlags: Short
-) {
-    companion object {
-        fun fromXML(element: Element): Location {
-            val address = element.attr("name")!!
-            val latitude = element.attr("latitude")!!
-            val longitude = element.attr("longitude")!!
-            val radius = element.attr("radius")?.toInt() ?: 100
-            val notificationFlags = element.attr("notificationFlags")!!.toShort()
-            return Location(
-                address,
-                latitude,
-                longitude,
-                radius,
-                notificationFlags
-            )
         }
     }
 }

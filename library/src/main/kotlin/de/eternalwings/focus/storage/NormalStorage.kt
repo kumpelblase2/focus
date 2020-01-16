@@ -2,12 +2,11 @@ package de.eternalwings.focus.storage
 
 import de.eternalwings.focus.storage.data.Changeset
 import de.eternalwings.focus.storage.data.OmniContainer
-import de.eternalwings.focus.storage.xml.parseXml
 import de.eternalwings.focus.storage.plist.DictionaryObject
 import de.eternalwings.focus.storage.plist.Plist
+import de.eternalwings.focus.storage.xml.parseXml
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
-import java.lang.IllegalStateException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.stream.Collectors
@@ -35,12 +34,14 @@ open class NormalStorage(override val location: Path) : OmniStorage {
         val timestamp = filenameMatch.groupValues[1].toLong()
         val previousId = filenameMatch.groupValues[2]
         val id = filenameMatch.groupValues[3]
-        return Changeset(timestamp, id, previousId) { parseFile(getContentOfFile(file)) }
+        getContentOfFile(file).use {
+            return Changeset(timestamp, id, previousId, parseFile(it))
+        }
     }
 
     private fun parseFile(zipInputStream: ZipInputStream): OmniContainer {
         val next = zipInputStream.nextEntry
-        if(!next.name!!.contentEquals(CONTENT_FILE_NAME)) {
+        if (!next.name!!.contentEquals(CONTENT_FILE_NAME)) {
             throw IllegalStateException("Got non-content file in zip")
         }
         val content = zipInputStream.readBytes()

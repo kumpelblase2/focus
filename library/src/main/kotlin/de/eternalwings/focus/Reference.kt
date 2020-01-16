@@ -1,4 +1,4 @@
-package de.eternalwings.focus.storage.data
+package de.eternalwings.focus
 
 data class Reference(val id: String)
 

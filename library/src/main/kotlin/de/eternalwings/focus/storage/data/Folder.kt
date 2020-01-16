@@ -1,5 +1,7 @@
 package de.eternalwings.focus.storage.data
 
+import de.eternalwings.focus.Referencable
+import de.eternalwings.focus.Reference
 import org.jdom2.Element
 import java.time.LocalDateTime
 
@@ -23,7 +25,7 @@ data class Folder(
             val added = element.date("added")
             val order = element.child("added")?.attr("order")?.toLong()
             val name = element.text("name")
-            val note = element.text("note")
+            val note = element.htmlText("note")
             val rank = element.long("rank")
             val hidden = element.boolean("hidden")
             val modified = element.date("modified")

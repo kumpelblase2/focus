@@ -1,5 +1,7 @@
 package de.eternalwings.focus.storage.data
 
+import de.eternalwings.focus.Reference
+import de.eternalwings.focus.asReference
 import org.jdom2.Element
 import java.time.LocalDateTime
 
@@ -10,6 +12,10 @@ fun Element.boolean(name: String): Boolean? {
 
 fun Element.text(name: String): String? {
     return this.getChildText(name, OmniContainer.NAMESPACE)
+}
+
+fun Element.htmlText(name: String): String? {
+    return this.getChild(name, OmniContainer.NAMESPACE)?.value
 }
 
 fun Element.long(name: String): Long? {

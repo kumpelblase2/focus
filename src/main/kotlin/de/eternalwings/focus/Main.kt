@@ -2,6 +2,7 @@ package de.eternalwings.focus
 
 import de.eternalwings.focus.storage.EncryptedOmniStorage
 import de.eternalwings.focus.storage.OmniStorage
+import de.eternalwings.focus.view.OmniFocusState
 import java.nio.file.Paths
 
 fun main(vararg args: String) {
@@ -14,7 +15,14 @@ fun main(vararg args: String) {
     storage.providePassword(args[1].toCharArray())
     val content = storage.changeSets
     content.forEach {
-        val references = it.contentContainer.content
+        val references = it.container.content
         println("Elements: " + references.size)
+    }
+
+    val view = OmniFocusState(storage)
+    println(view.contexts)
+    println(view.folder)
+    view.tasks.forEach { task ->
+        println(task)
     }
 }

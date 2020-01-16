@@ -15,7 +15,23 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
-internal data class Slot(val type: SlotType, val index: Int, val data: ByteArray)
+internal data class Slot(val type: SlotType, val index: Int, val data: ByteArray) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Slot) return false
+
+        if (type != other.type) return false
+        if (index != other.index) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = type.hashCode()
+        result = 31 * result + index
+        return result
+    }
+}
 
 enum class SlotType {
     NONE,
@@ -28,7 +44,7 @@ enum class SlotType {
 
     companion object {
         fun fromIndex(ordinal: Int): SlotType {
-            return SlotType.values().find { it.ordinal == ordinal } ?: throw IllegalArgumentException()
+            return values().find { it.ordinal == ordinal } ?: throw IllegalArgumentException()
         }
     }
 }
@@ -115,7 +131,6 @@ class EncryptedStorage(location: Path, encryptionPath: Path) : NormalStorage(loc
 
     companion object {
         private val secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
-        private val aes = Cipher.getInstance("AES")
         private const val WRAPPER_KEY_LENGTH = 128
         private const val MAGIC = "OmniFileEncryption"
     }

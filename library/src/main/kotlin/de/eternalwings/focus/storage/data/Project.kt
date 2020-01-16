@@ -1,5 +1,6 @@
 package de.eternalwings.focus.storage.data
 
+import de.eternalwings.focus.Reference
 import org.jdom2.Element
 import java.time.LocalDateTime
 

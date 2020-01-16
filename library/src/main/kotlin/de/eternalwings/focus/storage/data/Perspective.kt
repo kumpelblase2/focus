@@ -1,5 +1,6 @@
 package de.eternalwings.focus.storage.data
 
+import de.eternalwings.focus.Referencable
 import de.eternalwings.focus.storage.plist.Plist
 import de.eternalwings.focus.storage.plist.PlistObject
 import org.jdom2.Element
