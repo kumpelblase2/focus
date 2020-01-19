@@ -9,6 +9,11 @@ class OmniFocusState(private val storage: OmniStorage) {
     var folder: List<OmniFolder> = emptyList()
     var tasks: List<OmniTasklike> = emptyList()
 
+    val byId: Map<String,Referencable> by lazy {
+        val allElements: List<Referencable> = (contexts as List<Referencable> + folder + tasks)
+        allElements.map { it.id to it }.toMap()
+    }
+
     init {
         val tasks = mutableListOf<OmniTasklike>()
         val contexts = mutableListOf<OmniContext>()

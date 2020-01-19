@@ -9,11 +9,13 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven("https://dl.bintray.com/hotkeytlt/maven")
 }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     compile(project(":library"))
+    implementation("com.github.h0tk3y.betterParse:better-parse-jvm:0.4.0-alpha-3")
 }
 
 tasks.withType<KotlinCompile> {
