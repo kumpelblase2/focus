@@ -12,7 +12,7 @@ abstract class OmniTasklike : Referencable, Mergeable<OmniTasklike, Task> {
     abstract val note: String
     abstract val rank: Long?
     abstract val hidden: LocalDateTime?
-    abstract val context: Reference?
+    abstract val contexts: Set<Reference>
     abstract val start: LocalDateTime?
     abstract val due: LocalDateTime?
     abstract val completed: LocalDateTime?
@@ -24,4 +24,6 @@ abstract class OmniTasklike : Referencable, Mergeable<OmniTasklike, Task> {
     abstract val repeat: String?
     abstract val repetitionMethod: String?
     abstract val modified: LocalDateTime?
+
+    abstract fun copyWithContexts(newContexts: Collection<Reference>): OmniTasklike
 }

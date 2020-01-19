@@ -14,7 +14,7 @@ data class OmniProject(
     override val note: String,
     override val rank: Long?,
     override val hidden: LocalDateTime?,
-    override val context: Reference?,
+    override val contexts: Set<Reference>,
     override val start: LocalDateTime?,
     override val due: LocalDateTime?,
     override val completed: LocalDateTime?,
@@ -37,7 +37,7 @@ data class OmniProject(
         other.note ?: "",
         other.rank,
         other.hidden,
-        other.context,
+        other.context?.let { setOf(it) } ?: emptySet(),
         other.start,
         other.due,
         other.completed,
@@ -61,7 +61,7 @@ data class OmniProject(
             other.note ?: note,
             other.rank ?: rank,
             other.hidden ?: hidden,
-            other.context ?: context,
+            contexts + (other.context?.let { setOf(it) } ?: emptySet()),
             other.start ?: start,
             other.due ?: due,
             other.completed ?: completed,
@@ -74,5 +74,9 @@ data class OmniProject(
             other.repetitionMethod ?: repetitionMethod,
             other.modified ?: modified
         )
+    }
+
+    override fun copyWithContexts(newContexts: Collection<Reference>): OmniTasklike {
+        return this.copy(contexts = this.contexts + newContexts)
     }
 }

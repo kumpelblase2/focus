@@ -26,6 +26,17 @@ class OmniFocusState(private val storage: OmniStorage) {
                             OmniTask(it)
                         }
                     }
+                    is TaskToTag -> {
+                        when(item.operation) {
+                            Operation.CREATE -> {
+                                tasks.update({it.id == item.task!!.id}) {
+                                    it.copyWithContexts(setOf(item.context!!))
+                                }
+                            }
+                            Operation.REFERENCE -> {}
+                            else -> throw NotImplementedError("Operation ${item.operation} not implemented for ${item::class.java}.")
+                        }
+                    }
                 }
             }
         }
@@ -44,11 +55,23 @@ class OmniFocusState(private val storage: OmniStorage) {
             Operation.DELETE -> list.removeIf { it.id == item.id }
             Operation.CREATE -> list.add(creator(item))
             Operation.UPDATE -> {
-                val existing = list.find { it.id == item.id }
-                    ?: throw IllegalStateException("Couldn't find existing ${item::class.java} to merge the update into.")
-                existing.mergeFrom(item)
+                list.update({ it.id == item.id }) {
+                    it.mergeFrom(item)
+                }
             }
+            Operation.REFERENCE -> {} // technically we should handle this, but for now it's irrelevant
             else -> throw NotImplementedError("Operation ${item.operation} not implemented for ${item::class.java}.")
+        }
+    }
+
+    private fun <T> MutableList<T>.update(finder: (T) -> Boolean, update: (T) -> T) {
+        val index = this.indexOfFirst(finder)
+        if(index >= 0) {
+            val element = this[index]
+            val newElement = update(element)
+            this[index] = newElement
+        } else {
+            throw IllegalStateException("Couldn't update element")
         }
     }
 }

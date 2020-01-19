@@ -1,14 +1,11 @@
 package de.eternalwings.focus.view
 
 import de.eternalwings.focus.Reference
-import de.eternalwings.focus.storage.data.Project
 import de.eternalwings.focus.storage.data.Task
-import java.lang.IllegalStateException
 import java.time.LocalDateTime
 
 data class OmniTask(
     override val id: String,
-    val project: Project?,
     val inbox: Boolean,
     override val parent: Reference?,
     override val creation: Creation,
@@ -16,7 +13,7 @@ data class OmniTask(
     override val note: String,
     override val rank: Long?,
     override val hidden: LocalDateTime?,
-    override val context: Reference?,
+    override val contexts: Set<Reference>,
     override val start: LocalDateTime?,
     override val due: LocalDateTime?,
     override val completed: LocalDateTime?,
@@ -32,7 +29,6 @@ data class OmniTask(
 
     constructor(other: Task) : this(
         other.id,
-        other.project,
         other.inbox ?: false,
         other.parent,
         other.toCreation()!!,
@@ -40,7 +36,7 @@ data class OmniTask(
         other.note ?: "",
         other.rank,
         other.hidden,
-        other.context,
+        other.context?.let { setOf(it) } ?: emptySet(),
         other.start,
         other.due,
         other.completed,
@@ -54,14 +50,17 @@ data class OmniTask(
         other.modified
     )
 
+    val isCompleted: Boolean
+        get() = this.completed != null
+
     override fun mergeFrom(other: Task): OmniTask {
-        if(other.project != null) {
+        if (other.project != null) {
             // TODO can a task be converted to a project?
+            TODO()
         }
 
         return OmniTask(
             id,
-            other.project ?: project,
             other.inbox ?: inbox,
             other.parent ?: parent,
             other.toCreation() ?: creation,
@@ -69,7 +68,7 @@ data class OmniTask(
             other.note ?: note,
             other.rank ?: rank,
             other.hidden ?: hidden,
-            other.context ?: context,
+            contexts + (other.context?.let { setOf(it) } ?: emptySet()),
             other.start ?: start,
             other.due ?: due,
             other.completed ?: completed,
@@ -82,5 +81,9 @@ data class OmniTask(
             other.repetitionMethod ?: repetitionMethod,
             other.modified ?: modified
         )
+    }
+
+    override fun copyWithContexts(newContexts: Collection<Reference>): OmniTasklike {
+        return this.copy(contexts = this.contexts + newContexts)
     }
 }
