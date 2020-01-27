@@ -2,6 +2,8 @@ package de.eternalwings.focus.storage.data
 
 import de.eternalwings.focus.Referencable
 import de.eternalwings.focus.Reference
+import de.eternalwings.focus.storage.xml.*
+import de.eternalwings.focus.storage.xml.XmlConstants.TIME_FORMAT
 import org.jdom2.Element
 import java.time.LocalDateTime
 
@@ -15,6 +17,7 @@ data class Task(
     override val rank: Long?,
     val hidden: LocalDateTime?,
     val context: Reference?,
+    val additionalContexts: Set<Reference>,
     val start: LocalDateTime?,
     val due: LocalDateTime?,
     val completed: LocalDateTime?,
@@ -29,7 +32,46 @@ data class Task(
     val repetitionMethod: String?, // TODO can be an enum
     override val modified: LocalDateTime?,
     override val operation: Operation = Operation.CREATE
-) : Referencable, WithOperation, WithCreationTimestamp, WithModificationTimestamp, WithRank {
+) : Referencable, WithOperation, WithCreationTimestamp, WithModificationTimestamp, WithRank,
+    Mergeable<Task, Task> {
+
+    val allContexts: Set<Reference>
+        get() = if(context == null) emptySet() else setOf(context) + additionalContexts
+
+    override fun mergeFrom(other: Task): Task {
+        return Task(
+            id,
+            other.project ?: project,
+            other.inbox ?: inbox,
+            other.parent ?: parent,
+            other.name ?: name,
+            other.note ?: note,
+            other.rank ?: rank,
+            other.hidden ?: hidden,
+            other.context ?: context,
+            additionalContexts,
+            other.start ?: start,
+            other.due ?: due,
+            other.completed ?: completed,
+            other.estimatedMinutes ?: estimatedMinutes,
+            other.added ?: added,
+            other.order ?: order,
+            other.actionOrder ?: actionOrder,
+            other.flagged ?: flagged,
+            other.completedByChildren ?: completedByChildren,
+            other.repetitionRule ?: repetitionRule,
+            other.repeat ?: repeat,
+            other.repetitionMethod ?: repetitionMethod,
+            other.modified ?: modified
+        )
+    }
+
+    fun copyWithContexts(newContexts: Collection<Reference>): Task {
+        return this.copy(additionalContexts = additionalContexts + newContexts)
+    }
+
+    fun copyWithContext(newContext: Reference): Task = copyWithContexts(setOf(newContext))
+
     companion object {
         fun fromXML(element: Element): Task {
             val operation = element.attr("op")?.toOperation() ?: Operation.CREATE
@@ -66,6 +108,7 @@ data class Task(
                 rank,
                 hidden,
                 contextReference,
+                emptySet(),
                 start,
                 due,
                 completed,
@@ -90,7 +133,7 @@ data class Task(
 
         private fun String.asDateTime(): LocalDateTime? {
             if (this.isEmpty()) return null
-            return LocalDateTime.parse(this, OmniContainer.TIME_FORMAT)
+            return LocalDateTime.parse(this, TIME_FORMAT)
         }
     }
 }

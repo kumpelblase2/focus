@@ -2,6 +2,7 @@ package de.eternalwings.focus.storage.data
 
 import de.eternalwings.focus.Referencable
 import de.eternalwings.focus.Reference
+import de.eternalwings.focus.storage.xml.*
 import org.jdom2.Element
 import java.time.LocalDateTime
 
@@ -16,7 +17,23 @@ data class Folder(
     override val hidden: Boolean?,
     override val modified: LocalDateTime?,
     override val operation: Operation = Operation.CREATE
-) : Referencable, WithOperation, WithCreationTimestamp, WithModificationTimestamp, WithRank, CanHide {
+) : Referencable, WithOperation, WithCreationTimestamp, WithModificationTimestamp, WithRank, CanHide,
+    Mergeable<Folder, Folder> {
+
+    override fun mergeFrom(other: Folder): Folder {
+        return Folder(
+            id,
+            other.parent ?: parent,
+            other.added ?: added,
+            other.order ?: order,
+            other.name ?: name,
+            other.note ?: note,
+            other.rank ?: rank,
+            other.hidden ?: hidden,
+            other.modified ?: modified
+        )
+    }
+
     companion object {
         fun fromXML(element: Element): Folder {
             val operation = element.attr("op")?.toOperation() ?: Operation.CREATE

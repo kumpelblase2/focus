@@ -1,6 +1,7 @@
 package de.eternalwings.focus.storage.data
 
 import de.eternalwings.focus.Referencable
+import de.eternalwings.focus.storage.xml.XmlConstants.NAMESPACE
 import org.jdom2.Document
 import org.jdom2.Namespace
 import java.time.format.DateTimeFormatter
@@ -10,8 +11,6 @@ data class OmniContainer(
     val content: List<Referencable>
 ) {
     companion object {
-        val TIME_FORMAT: DateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
-        val NAMESPACE: Namespace = Namespace.getNamespace("http://www.omnigroup.com/namespace/OmniFocus/v2")
         fun fromXML(document: Document): OmniContainer {
             val element = document.rootElement
             val appId = element.getAttributeValue("app-id")

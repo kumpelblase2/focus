@@ -1,5 +1,6 @@
 package de.eternalwings.focus.storage.data
 
+import de.eternalwings.focus.storage.xml.attr
 import org.jdom2.Element
 
 data class Location(

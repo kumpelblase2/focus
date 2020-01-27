@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 
 data class OmniContext(
     override val id: String,
-    val parent: Reference?,
+    val parent: OmniContext?,
     val creation: Creation,
     val name: String,
     val note: String = "",
@@ -17,11 +17,11 @@ data class OmniContext(
     val location: OmniLocation? = null,
     val modificationTime: LocalDateTime? = null,
     val tasksUserOrdered: Boolean = true
-) : Referencable, Mergeable<OmniContext,Context> {
+) : Referencable {
 
-    constructor(context: Context) : this(
+    constructor(context: Context, resolveParent: (String) -> OmniContext) : this(
         context.id,
-        context.parentContext,
+        context.parentContext?.id?.let(resolveParent),
         context.toCreation()!!,
         context.name!!,
         context.note ?: "",
@@ -32,20 +32,4 @@ data class OmniContext(
         context.modified,
         context.tasksUserOrdered ?: true
     )
-
-    override fun mergeFrom(other: Context): OmniContext {
-        return OmniContext(
-            id,
-            other.parentContext ?: parent,
-            other.toCreation() ?: creation,
-            other.name ?: name,
-            other.note ?: note,
-            other.rank ?: rank,
-            other.hidden ?: hidden,
-            other.prohibitsNextAction ?: prohibitsNextAction,
-            other.location?.toOmniLocation() ?: location,
-            other.modified ?: modificationTime,
-            other.tasksUserOrdered ?: tasksUserOrdered
-        )
-    }
 }

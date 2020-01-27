@@ -3,7 +3,7 @@ package de.eternalwings.focus.query
 import de.eternalwings.focus.view.*
 import java.lang.IllegalStateException
 
-typealias TaskFilter = (OmniTask, OmniFocusState) -> Boolean
+typealias TaskFilter = (OmniTask) -> Boolean
 
 data class TaskQuery(
     val parts: List<TaskQueryPart>
@@ -11,14 +11,19 @@ data class TaskQuery(
     private val queryFunction: TaskFilter
 
     init {
-        queryFunction = parts.map { it.asFilter() }.reduce { acc, current ->
-            { task: OmniTask, state: OmniFocusState -> acc(task, state) && current(task, state) }
+        val filters = parts.map { it.asFilter() }
+        queryFunction = if(filters.isEmpty()) {
+            { omniTask -> true }
+        } else {
+            filters.reduce { acc, current ->
+                { task -> acc(task) && current(task) }
+            }
         }
     }
 
     fun eval(view: OmniFocusState): List<OmniTask> {
         val tasks = view.tasks.filterIsInstance<OmniTask>()
-        return tasks.filter { queryFunction(it, view) }
+        return tasks.filter { queryFunction(it) }
     }
 }
 
@@ -27,19 +32,17 @@ sealed class TaskQueryPart {
 
     data class ContextPart(val name: String) : TaskQueryPart() {
         override fun asFilter(): TaskFilter {
-            return filter@{ task, state ->
-                val contextIds = task.contexts
-                val contexts = contextIds.map { state.byId[it.id] }.filterIsInstance<OmniContext>()
-                contexts.any { it.name == name }
+            return filter@{ task ->
+                task.contexts.any { it.name == name }
             }
         }
     }
     data class ProjectPart(val name: String) : TaskQueryPart() {
         override fun asFilter(): TaskFilter {
-            return filter@{ task, state ->
+            return filter@{ task ->
                 var current: OmniTasklike? = task
                 while (current != null && current !is OmniProject) {
-                    current = current.parent?.let { state.byId[it.id] as? OmniTasklike }
+                    current = current.parent
                 }
 
                 if(current is OmniProject) {
@@ -63,13 +66,14 @@ sealed class TaskQueryPart {
 
     companion object {
         val shortcuts: Map<String,TaskFilter> = mapOf(
-            "available" to { task, state ->
-                val contextReferences = task.contexts
-                val contexts = contextReferences.map { state.byId[it.id] }.filterIsInstance<OmniContext>()
-                !task.isCompleted && contexts.none { it.prohibitsNextAction }
+            "available" to { task ->
+                !task.isCompleted && !task.blocked
             },
-            "inbox" to { task, state ->
+            "inbox" to { task ->
                 task.inbox
+            },
+            "flagged" to { task ->
+                task.flagged
             }
         )
     }

@@ -1,29 +1,31 @@
-package de.eternalwings.focus.storage.data
+package de.eternalwings.focus.storage.xml
 
 import de.eternalwings.focus.Reference
 import de.eternalwings.focus.asReference
+import de.eternalwings.focus.storage.xml.XmlConstants.NAMESPACE
+import de.eternalwings.focus.storage.xml.XmlConstants.TIME_FORMAT
 import org.jdom2.Element
 import java.time.LocalDateTime
 
 
 fun Element.boolean(name: String): Boolean? {
-    return this.getChildText(name, OmniContainer.NAMESPACE)?.toBoolean()
+    return this.getChildText(name, NAMESPACE)?.toBoolean()
 }
 
 fun Element.text(name: String): String? {
-    return this.getChildText(name, OmniContainer.NAMESPACE)
+    return this.getChildText(name, NAMESPACE)
 }
 
 fun Element.htmlText(name: String): String? {
-    return this.getChild(name, OmniContainer.NAMESPACE)?.value
+    return this.getChild(name, NAMESPACE)?.value
 }
 
 fun Element.long(name: String): Long? {
-    return this.getChildText(name, OmniContainer.NAMESPACE)?.toLong()
+    return this.getChildText(name, NAMESPACE)?.toLong()
 }
 
 fun Element.child(name: String): Element? {
-    return this.getChild(name, OmniContainer.NAMESPACE)
+    return this.getChild(name, NAMESPACE)
 }
 
 fun Element.attr(name: String): String? {
@@ -33,9 +35,9 @@ fun Element.attr(name: String): String? {
 fun Element.date(name: String): LocalDateTime? {
     val text = this.text(name)
     if(text.isNullOrEmpty()) return null
-    return LocalDateTime.parse(text, OmniContainer.TIME_FORMAT)
+    return LocalDateTime.parse(text, TIME_FORMAT)
 }
 
 fun Element.reference(name: String): Reference? {
-    return this.getChild(name, OmniContainer.NAMESPACE)?.getAttributeValue("idref")?.asReference()
+    return this.getChild(name, NAMESPACE)?.getAttributeValue("idref")?.asReference()
 }

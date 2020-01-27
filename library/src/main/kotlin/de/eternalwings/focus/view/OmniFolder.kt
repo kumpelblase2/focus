@@ -7,18 +7,18 @@ import java.time.LocalDateTime
 
 data class OmniFolder(
     override val id: String,
-    val parent: Reference?,
+    val parent: OmniFolder?,
     val creation: Creation,
     val name: String,
     val note: String = "",
     val rank: Long? = null,
     val hidden: Boolean = false,
     val modified: LocalDateTime? = null
-): Referencable, Mergeable<OmniFolder,Folder> {
+): Referencable {
 
-    constructor(folder: Folder) : this(
+    constructor(folder: Folder, resolveParent: (String) -> OmniFolder) : this(
         folder.id,
-        folder.parent,
+        folder.parent?.id?.let(resolveParent),
         folder.toCreation()!!,
         folder.name!!,
         folder.note ?: "",
@@ -26,17 +26,4 @@ data class OmniFolder(
         folder.hidden ?: false,
         folder.modified
     )
-
-    override fun mergeFrom(other: Folder): OmniFolder {
-        return OmniFolder(
-            id,
-            other.parent ?: parent,
-            other.toCreation() ?: creation,
-            other.name ?: name,
-            other.note ?: note,
-            other.rank ?: rank,
-            other.hidden ?: hidden,
-            other.modified ?: modified
-        )
-    }
 }

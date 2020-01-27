@@ -2,6 +2,8 @@ package de.eternalwings.focus.storage.data
 
 import de.eternalwings.focus.Referencable
 import de.eternalwings.focus.Reference
+import de.eternalwings.focus.storage.xml.*
+import de.eternalwings.focus.storage.xml.XmlConstants.TIME_FORMAT
 import org.jdom2.Element
 import java.time.LocalDateTime
 
@@ -19,7 +21,26 @@ data class Context(
     override val modified: LocalDateTime?,
     val tasksUserOrdered: Boolean?,
     override val operation: Operation = Operation.CREATE
-) : Referencable, WithCreationTimestamp, WithModificationTimestamp, WithRank, CanHide, WithOperation {
+) : Referencable, WithCreationTimestamp, WithModificationTimestamp, WithRank, CanHide, WithOperation,
+    Mergeable<Context, Context> {
+
+    override fun mergeFrom(other: Context): Context {
+        return Context(
+            id,
+            other.parentContext ?: parentContext,
+            other.added ?: added,
+            other.order ?: order,
+            other.name ?: name,
+            other.note ?: note,
+            other.rank ?: rank,
+            other.hidden ?: hidden,
+            other.prohibitsNextAction ?: prohibitsNextAction,
+            other.location ?: location,
+            other.modified ?: modified,
+            other.tasksUserOrdered ?: tasksUserOrdered
+        )
+    }
+
     companion object {
         fun fromXML(element: Element): Context {
             val id = element.attr("id")!!
@@ -60,7 +81,7 @@ data class Context(
 
         private fun String.asDateTime(): LocalDateTime? {
             if (this.isEmpty()) return null
-            return LocalDateTime.parse(this, OmniContainer.TIME_FORMAT)
+            return LocalDateTime.parse(this, TIME_FORMAT)
         }
     }
 }
