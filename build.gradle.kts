@@ -16,6 +16,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     compile(project(":library"))
     implementation("com.github.h0tk3y.betterParse:better-parse-jvm:0.4.0-alpha-3")
+    implementation("com.xenomachina:kotlin-argparser:2.0.7")
 }
 
 tasks.withType<KotlinCompile> {

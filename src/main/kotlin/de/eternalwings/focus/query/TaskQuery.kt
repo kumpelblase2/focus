@@ -2,6 +2,7 @@ package de.eternalwings.focus.query
 
 import de.eternalwings.focus.view.*
 import java.lang.IllegalStateException
+import java.time.LocalDateTime
 
 typealias TaskFilter = (OmniTask) -> Boolean
 
@@ -21,8 +22,7 @@ data class TaskQuery(
         }
     }
 
-    fun eval(view: OmniFocusState): List<OmniTask> {
-        val tasks = view.tasks.filterIsInstance<OmniTask>()
+    fun eval(tasks: List<OmniTask>): List<OmniTask> {
         return tasks.filter { queryFunction(it) }
     }
 }
@@ -74,6 +74,9 @@ sealed class TaskQueryPart {
             },
             "flagged" to { task ->
                 task.flagged
+            },
+            "due" to { task ->
+                task.due?.isBefore(LocalDateTime.now()) ?: false
             }
         )
     }
