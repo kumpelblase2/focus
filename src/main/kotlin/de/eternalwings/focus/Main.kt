@@ -35,7 +35,7 @@ fun main(vararg args: String) {
                 readPassword()
             } else {
                 if(parsed.password.isEmpty()) {
-                    println("The provided omnifocus storage is encrypted, but no password was given. Please provide the password using -p or -P")
+                    System.err.println("The provided omnifocus storage is encrypted, but no password was given. Please provide the password using -p or -P")
                     exitProcess(1)
                 }
                 parsed.password.toCharArray()
