@@ -52,9 +52,7 @@ fun main(vararg args: String) {
             else -> emptyList()
         }
 
-        if (result.isEmpty()) {
-            println("No tasks found")
-        } else {
+        if (!result.isEmpty()) {
             result.forEach { println(it) }
         }
     } catch (showHelp: ShowHelpException) {
