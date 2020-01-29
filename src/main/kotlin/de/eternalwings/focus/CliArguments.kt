@@ -7,7 +7,7 @@ class CliArguments(parser: ArgParser) {
 
     val password by parser.storing("-p", "--password", help = "The password for the omnifocus storage").default("")
 
-    val readPassword by parser.flagging("-P", help = "Provide password secretly")
+    val readPassword by parser.flagging("-P", "--ask-password", help = "Provide password secretly")
 
     val includeCompleted by parser.flagging("-C", "--show-completed", help = "Include completed tasks")
 
