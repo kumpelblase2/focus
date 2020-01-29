@@ -11,8 +11,15 @@ interface OmniStorage {
     val changeSets: List<Changeset>
 
     companion object {
-        fun fromPath(path: Path): OmniStorage {
-            require(Files.isDirectory(path))
+        fun fromPath(containerPath: Path): OmniStorage {
+            val path = if(containerPath.fileName.toString().endsWith(".ofocus")) {
+                containerPath
+            } else {
+                containerPath.resolve("OmniFocus.ofocus")
+            }
+            require(Files.exists(path)) { "Specified path does not exist." }
+            require(Files.isDirectory(path)) { "Specified path is not a directory and thus cannot be an omnifocus storage path." }
+            require(path.fileName.toString().endsWith(".ofocus")) { ".ofocus dir needs to be specified in path." }
 
             val encryptionFile =
                 Files.list(path).filter { Files.isRegularFile(it) && it.fileName.toString() == "encrypted" }.findAny()
