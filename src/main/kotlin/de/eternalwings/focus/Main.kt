@@ -12,6 +12,7 @@ import de.eternalwings.focus.storage.OmniStorage
 import de.eternalwings.focus.view.OmniFocusState
 import de.eternalwings.focus.view.OmniTask
 import java.nio.file.Paths
+import kotlin.system.exitProcess
 
 fun main(vararg args: String) {
 
@@ -31,8 +32,12 @@ fun main(vararg args: String) {
         val storage = OmniStorage.fromPath(Paths.get(path))
         if (storage is EncryptedOmniStorage) {
             val password = if (parsed.readPassword) {
-                System.`in`.bufferedReader().readLine().toCharArray()
+                readPassword()
             } else {
+                if(parsed.password.isEmpty()) {
+                    println("The provided omnifocus storage is encrypted, but no password was given. Please provide the password using -p or -P")
+                    exitProcess(1)
+                }
                 parsed.password.toCharArray()
             }
             storage.providePassword(password)
@@ -56,5 +61,18 @@ fun main(vararg args: String) {
         showHelp.printAndExit("focus")
     } catch (missingParam: MissingRequiredPositionalArgumentException) {
         missingParam.printAndExit("focus")
+    }
+}
+
+fun readPassword(): CharArray {
+    println("The provided omnifocus storage is encrypted, please provide the password below.")
+    val console = System.console()
+    return if(console != null) {
+        console.readPassword("Password: ")
+    } else {
+        println("Couldn't get access to a console! The input cannot be masked!")
+        print("Password: ")
+        // We don't need to close the input stream here
+        System.`in`.bufferedReader().readLine().toCharArray()
     }
 }
