@@ -4,18 +4,18 @@ import de.eternalwings.focus.Referencable
 import de.eternalwings.focus.Reference
 import de.eternalwings.focus.storage.xml.*
 import org.jdom2.Element
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 data class Folder(
     override val id: String,
     val parent: Reference?,
-    override val added: LocalDateTime?,
+    override val added: ZonedDateTime?,
     override val order: Long?,
     val name: String?,
     val note: String?,
     override val rank: Long?,
     override val hidden: Boolean?,
-    override val modified: LocalDateTime?,
+    override val modified: ZonedDateTime?,
     override val operation: Operation = Operation.CREATE
 ) : Referencable, WithOperation, WithCreationTimestamp, WithModificationTimestamp, WithRank, CanHide,
     Mergeable<Folder, Folder> {

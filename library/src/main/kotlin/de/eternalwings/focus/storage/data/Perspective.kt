@@ -4,15 +4,15 @@ import de.eternalwings.focus.Referencable
 import de.eternalwings.focus.storage.plist.Plist
 import de.eternalwings.focus.storage.plist.PlistObject
 import de.eternalwings.focus.storage.xml.XmlConstants.NAMESPACE
-import de.eternalwings.focus.storage.xml.XmlConstants.TIME_FORMAT
 import de.eternalwings.focus.storage.xml.attr
 import de.eternalwings.focus.storage.xml.child
+import de.eternalwings.focus.storage.xml.date
 import org.jdom2.Element
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 data class Perspective(
     override val id: String,
-    override val added: LocalDateTime?,
+    override val added: ZonedDateTime?,
     override val order: Long?,
     val content: PlistObject<*>?,
     override val operation: Operation = Operation.CREATE
@@ -33,7 +33,7 @@ data class Perspective(
         fun fromXML(element: Element): Perspective {
             val id = element.attr("id")!!
             val addedElement = element.getChild("added", NAMESPACE)
-            val added = LocalDateTime.parse(addedElement.value, TIME_FORMAT)
+            val added = addedElement?.value?.date()
             val addedOrder = addedElement.getAttribute("order")?.longValue
             val plistContent = Plist.parsePlistElement(element.child("plist")!!.children.first())
             return Perspective(

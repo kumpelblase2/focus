@@ -1,8 +1,9 @@
 package de.eternalwings.focus.query
 
-import de.eternalwings.focus.view.*
-import java.lang.IllegalStateException
-import java.time.LocalDateTime
+import de.eternalwings.focus.view.OmniProject
+import de.eternalwings.focus.view.OmniTask
+import de.eternalwings.focus.view.OmniTasklike
+import java.time.ZonedDateTime
 
 typealias TaskFilter = (OmniTask) -> Boolean
 
@@ -13,7 +14,7 @@ data class TaskQuery(
 
     init {
         val filters = parts.map { it.asFilter() }
-        queryFunction = if(filters.isEmpty()) {
+        queryFunction = if (filters.isEmpty()) {
             { omniTask -> true }
         } else {
             filters.reduce { acc, current ->
@@ -37,6 +38,7 @@ sealed class TaskQueryPart {
             }
         }
     }
+
     data class ProjectPart(val name: String) : TaskQueryPart() {
         override fun asFilter(): TaskFilter {
             return filter@{ task ->
@@ -45,7 +47,7 @@ sealed class TaskQueryPart {
                     current = current.parent
                 }
 
-                if(current is OmniProject) {
+                if (current is OmniProject) {
                     current.name == name
                 } else {
                     false
@@ -53,11 +55,13 @@ sealed class TaskQueryPart {
             }
         }
     }
+
     data class ShortcutPart(val name: String) : TaskQueryPart() {
         override fun asFilter(): TaskFilter {
             return shortcuts[name] ?: throw IllegalStateException("Couldn't find shortcut $name")
         }
     }
+
     data class PropertyPart(val name: String, val value: String) : TaskQueryPart() {
         override fun asFilter(): TaskFilter {
             TODO()
@@ -65,9 +69,9 @@ sealed class TaskQueryPart {
     }
 
     companion object {
-        val shortcuts: Map<String,TaskFilter> = mapOf(
+        val shortcuts: Map<String, TaskFilter> = mapOf(
             "available" to { task ->
-                !task.isCompleted && !task.blocked
+                !task.isCompleted && !task.blocked && !task.isStillDeferred
             },
             "inbox" to { task ->
                 task.inbox
@@ -76,7 +80,7 @@ sealed class TaskQueryPart {
                 task.flagged
             },
             "due" to { task ->
-                task.due?.isBefore(LocalDateTime.now()) ?: false
+                task.due?.isBefore(ZonedDateTime.now()) ?: false
             }
         )
     }

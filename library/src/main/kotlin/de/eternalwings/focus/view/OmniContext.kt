@@ -1,9 +1,8 @@
 package de.eternalwings.focus.view
 
 import de.eternalwings.focus.Referencable
-import de.eternalwings.focus.Reference
 import de.eternalwings.focus.storage.data.Context
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 data class OmniContext(
     override val id: String,
@@ -15,7 +14,7 @@ data class OmniContext(
     val hidden: Boolean = false,
     val prohibitsNextAction: Boolean = false,
     val location: OmniLocation? = null,
-    val modificationTime: LocalDateTime? = null,
+    val modificationTime: ZonedDateTime? = null,
     val tasksUserOrdered: Boolean = true
 ) : Referencable {
 

@@ -1,8 +1,8 @@
 package de.eternalwings.focus.storage.data
 
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 interface WithCreationTimestamp {
-    val added: LocalDateTime?
+    val added: ZonedDateTime?
     val order: Long?
 }

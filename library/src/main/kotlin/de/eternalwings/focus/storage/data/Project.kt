@@ -6,14 +6,13 @@ import de.eternalwings.focus.storage.xml.date
 import de.eternalwings.focus.storage.xml.reference
 import de.eternalwings.focus.storage.xml.text
 import org.jdom2.Element
-import java.time.Duration
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 data class Project(
     val folder: Reference?,
     val singleton: Boolean?,
-    val lastReview: LocalDateTime?,
-    val nextReview: LocalDateTime?,
+    val lastReview: ZonedDateTime?,
+    val nextReview: ZonedDateTime?,
     val reviewInterval: String?,
     val status: String?
 ) {

@@ -3,23 +3,19 @@ package de.eternalwings.focus.storage.data
 import de.eternalwings.focus.Referencable
 import de.eternalwings.focus.Reference
 import de.eternalwings.focus.asReference
-import de.eternalwings.focus.storage.xml.XmlConstants.TIME_FORMAT
-import de.eternalwings.focus.storage.xml.attr
-import de.eternalwings.focus.storage.xml.child
-import de.eternalwings.focus.storage.xml.long
-import de.eternalwings.focus.storage.xml.text
+import de.eternalwings.focus.storage.xml.*
 import org.jdom2.Element
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 data class Alarm(
     override val id: String,
-    override val added: LocalDateTime?,
+    override val added: ZonedDateTime?,
     override val order: Long?,
     val task: Reference?,
     val kind: String?,
     val variant: String?,
-    val fireAt: LocalDateTime?,
-    val repeatInterval: Long,
+    val fireAt: ZonedDateTime?,
+    val repeatInterval: Long?,
     override val operation: Operation = Operation.CREATE
 ) : Referencable, WithOperation, WithCreationTimestamp,
     Mergeable<Alarm, Alarm> {
@@ -43,15 +39,12 @@ data class Alarm(
 
             val id = element.getAttribute("id").value
             val addedElement = element.child("added")
-            val added = addedElement?.let { LocalDateTime.parse(it.value, TIME_FORMAT) }
+            val added = addedElement?.value?.date()
             val addedOrder = addedElement?.attr("order")?.toLong()
             val task = element.child("task")?.attr("idref")?.asReference()
             val kind = element.text("kind")
             val variant = element.text("variant")?.ifEmpty { null }
-            val fireDate = LocalDateTime.parse(
-                element.text("fire-date"),
-                TIME_FORMAT
-            )
+            val fireDate = element.text("fire-date")?.date()
             val repeatInterval = element.long("repeat-interval") ?: 0
             return Alarm(id, added, addedOrder, task, kind, variant, fireDate, repeatInterval, operation)
         }

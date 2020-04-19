@@ -4,11 +4,11 @@ import de.eternalwings.focus.Referencable
 import de.eternalwings.focus.Reference
 import de.eternalwings.focus.storage.xml.*
 import org.jdom2.Element
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 data class TaskToTag(
     override val id: String,
-    override val added: LocalDateTime?,
+    override val added: ZonedDateTime?,
     override val order: Long?,
     val task: Reference?,
     val context: Reference?,

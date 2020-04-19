@@ -3,13 +3,13 @@ package de.eternalwings.focus.view
 import de.eternalwings.focus.Reference
 import de.eternalwings.focus.storage.data.Mergeable
 import de.eternalwings.focus.storage.data.Project
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 data class ProjectDefinition(
     val folder: Reference?,
     val singleton: Boolean?,
-    val lastReview: LocalDateTime?,
-    val nextReview: LocalDateTime?,
+    val lastReview: ZonedDateTime?,
+    val nextReview: ZonedDateTime?,
     val reviewInterval: RelativeDuration?,
     val status: Status
 ) : Mergeable<ProjectDefinition, Project> {

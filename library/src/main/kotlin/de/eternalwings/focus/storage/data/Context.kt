@@ -3,14 +3,13 @@ package de.eternalwings.focus.storage.data
 import de.eternalwings.focus.Referencable
 import de.eternalwings.focus.Reference
 import de.eternalwings.focus.storage.xml.*
-import de.eternalwings.focus.storage.xml.XmlConstants.TIME_FORMAT
 import org.jdom2.Element
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 data class Context(
     override val id: String,
     val parentContext: Reference?,
-    override val added: LocalDateTime?,
+    override val added: ZonedDateTime?,
     override val order: Long?,
     val name: String?,
     val note: String?,
@@ -18,7 +17,7 @@ data class Context(
     override val hidden: Boolean?,
     val prohibitsNextAction: Boolean?,
     val location: Location?,
-    override val modified: LocalDateTime?,
+    override val modified: ZonedDateTime?,
     val tasksUserOrdered: Boolean?,
     override val operation: Operation = Operation.CREATE
 ) : Referencable, WithCreationTimestamp, WithModificationTimestamp, WithRank, CanHide, WithOperation,
@@ -46,7 +45,7 @@ data class Context(
             val id = element.attr("id")!!
             val parent = element.reference("context")
             val addedElement = element.child("added")
-            val added = addedElement?.value?.asDateTime()
+            val added = addedElement?.value?.date()
             val addedOrder = addedElement?.attr("order")?.toLong()
             val name = element.text("name")
             val note = element.htmlText("note")
@@ -77,11 +76,6 @@ data class Context(
         private fun Element.toLocation(): Location? {
             if (!this.hasAttributes()) return null
             return Location.fromXML(this)
-        }
-
-        private fun String.asDateTime(): LocalDateTime? {
-            if (this.isEmpty()) return null
-            return LocalDateTime.parse(this, TIME_FORMAT)
         }
     }
 }

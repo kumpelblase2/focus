@@ -2,7 +2,7 @@ package de.eternalwings.focus.view
 
 import de.eternalwings.focus.Reference
 import de.eternalwings.focus.storage.data.Task
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 data class OmniProject(
     override val id: String,
@@ -12,19 +12,19 @@ data class OmniProject(
     override val name: String,
     override val note: String,
     override val rank: Long?,
-    override val hidden: LocalDateTime?,
+    override val dropped: ZonedDateTime?,
     override val contexts: Set<OmniContext>,
-    override val start: LocalDateTime?,
-    override val due: LocalDateTime?,
-    override val completed: LocalDateTime?,
+    override val deferred: ZonedDateTime?,
+    override val due: ZonedDateTime?,
+    override val completed: ZonedDateTime?,
     override val estimatedMinutes: Long?,
     override val actionOrder: String,
     override val flagged: Boolean,
     override val completedByChildren: Boolean,
-    override val modified: LocalDateTime?
+    override val modified: ZonedDateTime?
 ) : OmniTasklike() {
 
-    constructor(other: Task, resolveContext: (Reference) -> OmniContext, resolveParent: (String) -> OmniProject): this(
+    constructor(other: Task, resolveContext: (Reference) -> OmniContext, resolveParent: (String) -> OmniProject) : this(
         other.id,
         ProjectDefinition(other.project!!),
         other.parent?.id?.let(resolveParent),

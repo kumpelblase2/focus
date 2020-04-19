@@ -3,9 +3,8 @@ package de.eternalwings.focus.storage.data
 import de.eternalwings.focus.Referencable
 import de.eternalwings.focus.Reference
 import de.eternalwings.focus.storage.xml.*
-import de.eternalwings.focus.storage.xml.XmlConstants.TIME_FORMAT
 import org.jdom2.Element
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 data class Task(
     override val id: String,
@@ -15,14 +14,14 @@ data class Task(
     val name: String?,
     val note: String?, // TODO not a string
     override val rank: Long?,
-    val hidden: LocalDateTime?,
+    val hidden: ZonedDateTime?,
     val context: Reference?,
     val additionalContexts: Set<Reference>,
-    val start: LocalDateTime?,
-    val due: LocalDateTime?,
-    val completed: LocalDateTime?,
+    val start: ZonedDateTime?,
+    val due: ZonedDateTime?,
+    val completed: ZonedDateTime?,
     val estimatedMinutes: Long?,
-    override val added: LocalDateTime?,
+    override val added: ZonedDateTime?,
     override val order: Long?,
     val actionOrder: String?, // TODO this can be an enum of 'parallel','sequential',...
     val flagged: Boolean?,
@@ -30,13 +29,13 @@ data class Task(
     val repetitionRule: String?,
     val repeat: String?,
     val repetitionMethod: String?, // TODO can be an enum
-    override val modified: LocalDateTime?,
+    override val modified: ZonedDateTime?,
     override val operation: Operation = Operation.CREATE
 ) : Referencable, WithOperation, WithCreationTimestamp, WithModificationTimestamp, WithRank,
     Mergeable<Task, Task> {
 
     val allContexts: Set<Reference>
-        get() = if(context == null) emptySet() else setOf(context) + additionalContexts
+        get() = if (context == null) emptySet() else setOf(context) + additionalContexts
 
     override fun mergeFrom(other: Task): Task {
         return Task(
@@ -80,7 +79,7 @@ data class Task(
             val inbox = element.boolean("inbox")
             val project = element.child("project")?.asProject()
             val addedElement = element.child("added")
-            val added = addedElement?.value?.asDateTime()
+            val added = addedElement?.value?.date()
             val addedOrder = addedElement?.attr("order")?.toLong()
             val parent = element.reference("task")
             val name = element.text("name")
@@ -127,13 +126,8 @@ data class Task(
         }
 
         private fun Element.asProject(): Project? {
-            if(this.children.size == 0) return null
+            if (this.children.size == 0) return null
             return Project.fromXML(this)
-        }
-
-        private fun String.asDateTime(): LocalDateTime? {
-            if (this.isEmpty()) return null
-            return LocalDateTime.parse(this, TIME_FORMAT)
         }
     }
 }

@@ -1,9 +1,8 @@
 package de.eternalwings.focus.view
 
 import de.eternalwings.focus.Referencable
-import de.eternalwings.focus.Reference
 import de.eternalwings.focus.storage.data.Folder
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 data class OmniFolder(
     override val id: String,
@@ -13,8 +12,8 @@ data class OmniFolder(
     val note: String = "",
     val rank: Long? = null,
     val hidden: Boolean = false,
-    val modified: LocalDateTime? = null
-): Referencable {
+    val modified: ZonedDateTime? = null
+) : Referencable {
 
     constructor(folder: Folder, resolveParent: (String) -> OmniFolder) : this(
         folder.id,
