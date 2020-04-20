@@ -1,11 +1,13 @@
 package de.eternalwings.focus
 
 import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
+import com.github.h0tk3y.betterParse.parser.ErrorResult
 import com.github.h0tk3y.betterParse.parser.Parsed
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.DefaultHelpFormatter
 import com.xenomachina.argparser.MissingRequiredPositionalArgumentException
 import com.xenomachina.argparser.ShowHelpException
+import de.eternalwings.focus.presentation.TaskListPrinter
 import de.eternalwings.focus.query.QueryParser
 import de.eternalwings.focus.storage.EncryptedOmniStorage
 import de.eternalwings.focus.storage.OmniStorage
@@ -18,7 +20,8 @@ fun main(vararg args: String) {
 
     val prologue = """
         This program can read and filter elements from an omnifocus database. If it's encrypted, 
-        a password needs to be provided by the user.
+        providing a password also allows the program to decrypt the database before and thus continue
+        like normal.
         
         The QUERY allows filtering the found tasks to show only the ones interested in. You can 
         find more information about the query language at BLA.
@@ -34,7 +37,7 @@ fun main(vararg args: String) {
             val password = if (parsed.readPassword) {
                 readPassword()
             } else {
-                if(parsed.password.isEmpty()) {
+                if (parsed.password.isEmpty()) {
                     System.err.println("The provided omnifocus storage is encrypted, but no password was given. Please provide the password using -p or -P")
                     exitProcess(1)
                 }
@@ -44,16 +47,27 @@ fun main(vararg args: String) {
         }
         val view = OmniFocusState(storage)
         val taskInstances = view.tasks.filterIsInstance<OmniTask>()
-        val tasks = if(!parsed.includeCompleted) taskInstances.filter { !it.isCompleted } else taskInstances
+        val tasks = if (!parsed.includeCompleted) taskInstances.filter { !it.isCompleted } else taskInstances
 
         val query = QueryParser.tryParseToEnd(parsed.query)
         val result = when (query) {
             is Parsed -> query.value.eval(tasks)
-            else -> emptyList()
+            is ErrorResult -> {
+                System.err.println("Error parsing query: $query")
+                exitProcess(1)
+            }
         }
 
-        if (!result.isEmpty()) {
-            result.forEach { println(it) }
+        if (result.isNotEmpty()) {
+            if (parsed.json) {
+                TaskListPrinter.printJson(result)
+            } else {
+                TaskListPrinter.print(result)
+            }
+        }
+
+        if (parsed.total) {
+            println("Total: ${result.size}/${taskInstances.size} Tasks.")
         }
     } catch (showHelp: ShowHelpException) {
         showHelp.printAndExit("focus")
@@ -65,7 +79,7 @@ fun main(vararg args: String) {
 fun readPassword(): CharArray {
     println("The provided omnifocus storage is encrypted, please provide the password below.")
     val console = System.console()
-    return if(console != null) {
+    return if (console != null) {
         console.readPassword("Password: ")
     } else {
         println("Couldn't get access to a console! The input cannot be masked!")
