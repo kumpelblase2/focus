@@ -10,10 +10,14 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 import java.nio.file.Path
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 object Plist {
-    private val PLIST_DOCTYPE = DocType("plist", "-//Apple//DTD PLIST 1.0//EN", "http://www.apple.com/DTDs/PropertyList-1.0.dtd")
+    private val PLIST_DOCTYPE =
+        DocType("plist", "-//Apple//DTD PLIST 1.0//EN", "http://www.apple.com/DTDs/PropertyList-1.0.dtd")
+    private val TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX")
 
     fun parsePlist(file: Path): PlistObject<*> {
         val builder = SAXBuilder()
@@ -39,7 +43,7 @@ object Plist {
     }
 
     private fun toElement(element: PlistObject<*>): Element {
-        return when(element) {
+        return when (element) {
             is StringObject -> Element("string").also { it.addContent(element.content) }
             is ArrayObject -> Element("array").also {
                 element.content.map(::toElement).forEach { elem -> it.addContent(elem) }
@@ -53,13 +57,15 @@ object Plist {
                 }
             }
             is DataObject -> Element("data").also { it.addContent(base64Encode(element.content)) }
-            is DateObject -> Element("date").also { it.addContent(element.content.toString()) }
+            is DateObject -> Element("date").also {
+                it.addContent(element.content.atZoneSameInstant(ZoneOffset.UTC).format(TIME_FORMAT))
+            }
             else -> throw IllegalStateException("Unknown data type for plist: ${element.javaClass}")
         }
     }
 
     fun parsePlistElement(element: Element): PlistObject<*> {
-        return when(element.name) {
+        return when (element.name) {
             "dict" -> DictionaryObject(element.children.chunked(2).map(Plist::createDictEntry).toMap())
             "array" -> ArrayObject(element.children.map(Plist::parsePlistElement))
             "integer" -> IntegerObject(element.value.toInt())
