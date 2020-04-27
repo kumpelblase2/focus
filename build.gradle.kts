@@ -1,7 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     kotlin("jvm") version "1.3.61"
+    id("com.github.johnrengelman.shadow") version "4.0.4"
 }
 
 group = "de.eternalwings"
@@ -21,6 +23,16 @@ dependencies {
 
     testCompile("org.junit.jupiter:junit-jupiter-api:5.6.2")
     testRuntime("org.junit.jupiter:junit-jupiter-engine:5.6.2")
+}
+
+tasks {
+    named<ShadowJar>("shadowJar") {
+        archiveBaseName.set("focus-full")
+        mergeServiceFiles()
+        manifest {
+            attributes(mapOf("Main-Class" to "de.eternalwings.focus.MainKt"))
+        }
+    }
 }
 
 tasks.withType<KotlinCompile> {
