@@ -3,7 +3,9 @@ package de.eternalwings.focus.storage
 import de.eternalwings.focus.storage.plist.ArrayObject
 import de.eternalwings.focus.storage.plist.DictionaryObject
 import de.eternalwings.focus.storage.plist.StringObject
+import oshi.SystemInfo
 import java.time.OffsetDateTime
+import java.util.*
 
 data class OmniDevice(
     val marketingVersion: String,
@@ -28,6 +30,24 @@ data class OmniDevice(
     val tailIds: Collection<String>
 ) {
     companion object {
+
+        const val MARKETING_VERSION = "3.7"
+        const val FRAMEWORK_VERSION = "2"
+        const val SYNC_VERSION = "6.0.5"
+        val SUPPORTED_CAPABILITIES = listOf("delta_transactions")
+        val XML_SUPPORTED_CAPABILITIES =
+            listOf(
+                "stable_repeats",
+                "external_attachments",
+                "floating_time_zones",
+                "unknown_element_import",
+                "versioned_perspectives",
+                "delta_transactions",
+                "active_object_hidden_dates"
+            )
+        const val BUNDLE_IDENTIFIER = "de.eternalwings.focus.Cli"
+        const val BUNDLE_VERSION = "1.0"
+
         fun fromPlist(plist: DictionaryObject): OmniDevice {
             return with(plist.content) {
                 OmniDevice(
@@ -53,6 +73,36 @@ data class OmniDevice(
                     (this["tailIdentifiers"] as ArrayObject).content.map { (it as StringObject).content }
                 )
             }
+        }
+
+        fun create(name: String, id: String, model: String): OmniDevice {
+            val registration = OffsetDateTime.now()
+            val hostID = UUID.randomUUID().toString()
+            val cpuCount = Runtime.getRuntime().availableProcessors()
+            val systemInfo = SystemInfo()
+
+            return OmniDevice(
+                MARKETING_VERSION,
+                FRAMEWORK_VERSION,
+                cpuCount.toString(),
+                systemInfo.hardware.processor.physicalProcessorCount.toString() + "," + systemInfo.hardware.processor.logicalProcessorCount.toString(),
+                systemInfo.hardware.processor.processorIdentifier.name,
+                System.getProperty("os.arch"),
+                model,
+                SYNC_VERSION,
+                SUPPORTED_CAPABILITIES,
+                System.getProperty("os.name"),
+                System.getProperty("os.version"),
+                XML_SUPPORTED_CAPABILITIES,
+                BUNDLE_IDENTIFIER,
+                BUNDLE_VERSION,
+                id,
+                hostID,
+                registration,
+                name,
+                registration,
+                emptyList()
+            )
         }
     }
 }
