@@ -15,8 +15,8 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 object Plist {
-    private val PLIST_DOCTYPE =
-        DocType("plist", "-//Apple//DTD PLIST 1.0//EN", "http://www.apple.com/DTDs/PropertyList-1.0.dtd")
+    private val PLIST_DOCTYPE
+        get() = DocType("plist", "-//Apple//DTD PLIST 1.0//EN", "http://www.apple.com/DTDs/PropertyList-1.0.dtd")
     private val TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX")
 
     fun parsePlist(file: Path): PlistObject<*> {
