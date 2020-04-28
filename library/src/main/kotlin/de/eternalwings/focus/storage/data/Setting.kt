@@ -1,6 +1,5 @@
 package de.eternalwings.focus.storage.data
 
-import de.eternalwings.focus.Referencable
 import de.eternalwings.focus.storage.plist.Plist
 import de.eternalwings.focus.storage.plist.PlistObject
 import de.eternalwings.focus.storage.xml.XmlConstants.NAMESPACE
@@ -15,8 +14,10 @@ data class Setting(
     override val added: ZonedDateTime?,
     override val order: Long?,
     val content: PlistObject<*>?
-) : Referencable, WithCreationTimestamp,
-    Mergeable<Setting, Setting> {
+) : BaseChangesetElement(), WithCreationTimestamp,
+    Mergeable<Setting> {
+
+    override val tagName = TAG_NAME
 
     override fun mergeFrom(other: Setting): Setting {
         return Setting(
@@ -27,7 +28,16 @@ data class Setting(
         )
     }
 
+    override fun fillXmlElement(element: Element) {
+        content?.let { content ->
+            val contentPlist = Plist.toElement(content)
+            element.addContent(Element("plist").also { it.addContent(contentPlist) })
+        }
+    }
+
     companion object {
+        const val TAG_NAME = "setting"
+
         fun fromXML(element: Element): Setting {
             val id = element.attr("id")!!
             val addedElement = element.getChild("added", NAMESPACE)

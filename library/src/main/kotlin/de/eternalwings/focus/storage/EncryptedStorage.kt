@@ -2,6 +2,8 @@ package de.eternalwings.focus.storage
 
 import de.eternalwings.focus.read
 import de.eternalwings.focus.readExpecting
+import de.eternalwings.focus.storage.data.Changeset
+import de.eternalwings.focus.storage.data.ChangesetFile
 import de.eternalwings.focus.storage.plist.ArrayObject
 import de.eternalwings.focus.storage.plist.DictionaryObject
 import de.eternalwings.focus.storage.plist.Plist
@@ -59,9 +61,7 @@ class EncryptedStorage(location: Path, encryptionPath: Path) : NormalStorage(loc
     override fun providePassword(password: CharArray) {
         val keySpec = PBEKeySpec(password, encryptionInfo.salt, encryptionInfo.rounds, WRAPPER_KEY_LENGTH)
         val pbkdfKey = secretKeyFactory.generateSecret(keySpec)
-        val aesWrap = Cipher.getInstance("AESWrap", "SunJCE")
-        aesWrap.init(Cipher.UNWRAP_MODE, SecretKeySpec(pbkdfKey.encoded, "AES"))
-        val unwrappedKeys = aesWrap.unwrap(encryptionInfo.key, "AES/CTR/NOPADDING", Cipher.SECRET_KEY) as SecretKey
+        val unwrappedKeys = unwrapSecretKeyFrom(encryptionInfo.key, pbkdfKey.encoded)
         var currentIndex = 0
         val byteData = unwrappedKeys.encoded
         val secrets = emptyList<Slot>().toMutableList()
@@ -93,13 +93,26 @@ class EncryptedStorage(location: Path, encryptionPath: Path) : NormalStorage(loc
             }
             SlotType.ACTIVE_AES_WRAP, SlotType.RETIRED_AES_WRAP -> {
                 val wrappedKey = info.copyOfRange(2, info.size)
-                val aesWrap = Cipher.getInstance("AESWrap", "SunJCE")
-                aesWrap.init(Cipher.UNWRAP_MODE, SecretKeySpec(slot.data, "AES"))
-                val unwrapped = aesWrap.unwrap(wrappedKey, "AES/CTR/NOPADDING", Cipher.SECRET_KEY) as SecretKey
+                val unwrapped = unwrapSecretKeyFrom(wrappedKey, slot.data)
                 FileDecryptor(unwrapped.encoded.copyOfRange(0, 16), unwrapped.encoded.copyOfRange(16, 32))
             }
             else -> throw IllegalStateException()
         }
+    }
+
+    private fun unwrapSecretKeyFrom(wrappedKey: ByteArray, decryptionKey: ByteArray): SecretKey {
+        val aesWrap = Cipher.getInstance("AESWrap", "SunJCE")
+        aesWrap.init(Cipher.UNWRAP_MODE, SecretKeySpec(decryptionKey, "AES"))
+        return aesWrap.unwrap(wrappedKey, "AES/CTR/NOPADDING", Cipher.SECRET_KEY) as SecretKey
+    }
+
+    override fun createChangesetForFile(file: ChangesetFile): Changeset {
+        check(unwrappedKeys.isNotEmpty()) { "No password was provided for encrypted store." }
+        return super.createChangesetForFile(file)
+    }
+
+    override fun unencryptedCopy(): OmniStorage {
+        return InMemoryStorage(devices, capabilities, changeSets)
     }
 
     override fun getContentOfFile(file: Path): ZipInputStream {

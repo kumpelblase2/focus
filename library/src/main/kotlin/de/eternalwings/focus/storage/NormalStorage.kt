@@ -1,52 +1,79 @@
 package de.eternalwings.focus.storage
 
+import de.eternalwings.focus.storage.FilenameConstants.CAPABILITY_FILE_NAME
+import de.eternalwings.focus.storage.FilenameConstants.CLIENT_FILE_NAME
+import de.eternalwings.focus.storage.FilenameConstants.CONTENT_FILE_NAME
 import de.eternalwings.focus.storage.data.Changeset
+import de.eternalwings.focus.storage.data.ChangesetFile
 import de.eternalwings.focus.storage.data.OmniContainer
 import de.eternalwings.focus.storage.plist.DictionaryObject
 import de.eternalwings.focus.storage.plist.Plist
-import de.eternalwings.focus.storage.xml.parseXml
+import org.jdom2.input.SAXBuilder
+import org.jdom2.output.Format
+import org.jdom2.output.XMLOutputter
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
+import java.time.OffsetDateTime
+import java.time.ZonedDateTime
 import java.util.stream.Collectors
+import java.util.stream.Stream
+import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
 import kotlin.streams.toList
 
-open class NormalStorage(override val location: Path) : OmniStorage {
+open class NormalStorage(override val location: Path) : OmniStorage, PhysicalStorage {
     override val changeSets: List<Changeset> by lazy {
-        changesetFiles.parallelStream()
+        changeSetFiles.parallelStream()
             .map(this::createChangesetForFile)
             .sorted(Comparator.comparing(Changeset::timestamp))
             .collect(Collectors.toList())
     }
 
-    private val changesetFiles: Collection<Path>
+    override fun registerDevice(device: OmniDevice) {
+        val deviceId = device.clientId
+        val date = ZonedDateTime.now()
+        val dateString = date.format(FilenameConstants.CLIENT_FILE_DATE_FORMAT)
+        val path = location.resolve("$dateString=$deviceId.client")
+        val lastChangeset = changeSetFiles.last()
+        Plist.writePlist(device.copy(tailIds = listOf(lastChangeset.id)).toPlist(), path)
+    }
+
+    override val changeSetFiles: List<ChangesetFile>
         get() {
             return Files.list(location)
                 .filter { Files.isRegularFile(it) }
-                .filter { CHANGESET_FILE_REGEX.matches(it.fileName.toString()) }
+                .flatMap {
+                    val file = ChangesetFile.fromFile(it)
+                    if (file == null) Stream.empty()
+                    else Stream.of(file)
+                }
+                .sorted(Comparator.comparing(ChangesetFile::timestamp))
                 .toList()
         }
 
-    protected fun createChangesetForFile(file: Path): Changeset {
-        val filenameMatch = CHANGESET_FILE_REGEX.matchEntire(file.fileName.toString()) ?: throw IllegalStateException()
-        val timestamp = filenameMatch.groupValues[1].toLong()
-        val previousId = filenameMatch.groupValues[2]
-        val id = filenameMatch.groupValues[3]
-        getContentOfFile(file).use {
-            return Changeset(timestamp, id, previousId, parseFile(it))
-        }
+    protected open fun createChangesetForFile(file: ChangesetFile): Changeset {
+        val content = getContentOfFile(file)
+        return Changeset(file.timestamp, file.id, file.previousId, parseFile(content))
     }
 
-    private fun parseFile(zipInputStream: ZipInputStream): OmniContainer {
-        val next = zipInputStream.nextEntry
-        if (!next.name!!.contentEquals(CONTENT_FILE_NAME)) {
-            throw IllegalStateException("Got non-content file in zip")
-        }
-        val content = zipInputStream.readBytes()
+    private fun parseFile(content: ByteArray): OmniContainer {
         val inputStreamFromBytes = ByteArrayInputStream(content)
-        return parseXml(inputStreamFromBytes)
+        val xmlContent = xmlBuilder.build(inputStreamFromBytes)
+        return OmniContainer.fromXML(xmlContent)
+    }
+
+    override fun getContentOfFile(file: ChangesetFile): ByteArray {
+        getContentOfFile(file.path).use {
+            val next = it.nextEntry
+            if (!next.name!!.contentEquals(CONTENT_FILE_NAME)) {
+                throw IllegalStateException("Got non-content file in zip")
+            }
+            return it.readBytes()
+        }
     }
 
     protected open fun getContentOfFile(file: Path): ZipInputStream {
@@ -72,9 +99,6 @@ open class NormalStorage(override val location: Path) : OmniStorage {
         }
 
     companion object {
-        val CHANGESET_FILE_REGEX = "(\\d{14})=(.{11})\\+(.{11})\\.zip$".toRegex()
-        const val CONTENT_FILE_NAME = "contents.xml"
-        const val CLIENT_FILE_NAME = ".client"
-        const val CAPABILITY_FILE_NAME = ".capability"
+        private val xmlBuilder = SAXBuilder()
     }
 }

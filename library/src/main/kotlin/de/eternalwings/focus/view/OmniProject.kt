@@ -1,6 +1,7 @@
 package de.eternalwings.focus.view
 
 import de.eternalwings.focus.Reference
+import de.eternalwings.focus.storage.data.Operation
 import de.eternalwings.focus.storage.data.Task
 import java.time.ZonedDateTime
 
@@ -24,9 +25,14 @@ data class OmniProject(
     override val modified: ZonedDateTime?
 ) : OmniTasklike() {
 
-    constructor(other: Task, resolveContext: (Reference) -> OmniContext, resolveParent: (String) -> OmniProject) : this(
+    constructor(
+        other: Task,
+        resolveContext: (Reference) -> OmniContext,
+        resolveParent: (String) -> OmniProject,
+        resolveFolder: (String) -> OmniFolder
+    ) : this(
         other.id,
-        ProjectDefinition(other.project!!),
+        ProjectDefinition(other.project!!, resolveFolder),
         other.parent?.id?.let(resolveParent),
         other.toCreation()!!,
         other.name!!,
@@ -46,5 +52,34 @@ data class OmniProject(
 
     override val blocked: Boolean by lazy {
         contexts.any { it.prohibitsNextAction }
+    }
+
+    override fun toTask(): Task {
+        return Task(
+            this.id,
+            this.project.toProject(),
+            null,
+            this.parent?.let { Reference(it.id) },
+            this.name,
+            this.note,
+            this.rank,
+            this.dropped,
+            null, // TODO
+            emptySet(),
+            this.deferred,
+            this.due,
+            this.completed,
+            this.estimatedMinutes,
+            this.creation.creationTime,
+            this.creation.order,
+            this.actionOrder,
+            this.flagged,
+            this.completedByChildren,
+            null,
+            null,
+            null,
+            this.modified,
+            Operation.UPDATE
+        )
     }
 }

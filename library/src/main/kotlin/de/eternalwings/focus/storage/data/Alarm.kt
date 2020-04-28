@@ -1,8 +1,6 @@
 package de.eternalwings.focus.storage.data
 
-import de.eternalwings.focus.Referencable
 import de.eternalwings.focus.Reference
-import de.eternalwings.focus.asReference
 import de.eternalwings.focus.storage.xml.*
 import org.jdom2.Element
 import java.time.ZonedDateTime
@@ -17,8 +15,8 @@ data class Alarm(
     val fireAt: ZonedDateTime?,
     val repeatInterval: Long?,
     override val operation: Operation = Operation.CREATE
-) : Referencable, WithOperation, WithCreationTimestamp,
-    Mergeable<Alarm, Alarm> {
+) : ChangesetElement, WithOperation, WithCreationTimestamp,
+    Mergeable<Alarm> {
 
     override fun mergeFrom(other: Alarm): Alarm {
         return Alarm(
@@ -33,7 +31,29 @@ data class Alarm(
         )
     }
 
+    override fun toXML(): Element {
+        return Element(TAG_NAME, XmlConstants.NAMESPACE).also {
+            if (operation != Operation.CREATE) {
+                it.setAttribute("op", operation.name.toLowerCase())
+            }
+            it.setAttribute("id", id)
+
+            check(added != null) { "An alarm changeset entry always has an added date." }
+            val elem = dateElement("added", added)
+            order?.let { elem.setAttribute("order", order.toString()) }
+            it.addContent(elem)
+
+            task?.let { task -> it.addContent(referenceElement("task", task)) }
+            kind?.let { kind -> it.addContent(textElement("kind", kind)) }
+            variant?.let { variant -> it.addContent(textElement("variant", variant)) }
+            fireAt?.let { fireAt -> it.addContent(dateElement("fire-date", fireAt)) }
+            repeatInterval?.let { interval -> it.addContent(longElement("repeat-interval", interval)) }
+        }
+    }
+
     companion object {
+        const val TAG_NAME = "alarm"
+
         fun fromXML(element: Element): Alarm {
             val operation = element.attr("op")?.toOperation() ?: Operation.CREATE
 
@@ -41,7 +61,7 @@ data class Alarm(
             val addedElement = element.child("added")
             val added = addedElement?.value?.date()
             val addedOrder = addedElement?.attr("order")?.toLong()
-            val task = element.child("task")?.attr("idref")?.asReference()
+            val task = element.reference("task")
             val kind = element.text("kind")
             val variant = element.text("variant")?.ifEmpty { null }
             val fireDate = element.text("fire-date")?.date()

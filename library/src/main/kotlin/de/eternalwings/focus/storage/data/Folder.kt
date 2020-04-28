@@ -1,6 +1,5 @@
 package de.eternalwings.focus.storage.data
 
-import de.eternalwings.focus.Referencable
 import de.eternalwings.focus.Reference
 import de.eternalwings.focus.storage.xml.*
 import org.jdom2.Element
@@ -17,8 +16,10 @@ data class Folder(
     override val hidden: Boolean?,
     override val modified: ZonedDateTime?,
     override val operation: Operation = Operation.CREATE
-) : Referencable, WithOperation, WithCreationTimestamp, WithModificationTimestamp, WithRank, CanHide,
-    Mergeable<Folder, Folder> {
+) : BaseChangesetElement(), WithOperation, WithCreationTimestamp, WithModificationTimestamp, WithRank, CanHide,
+    Mergeable<Folder> {
+
+    override val tagName = TAG_NAME
 
     override fun mergeFrom(other: Folder): Folder {
         return Folder(
@@ -34,7 +35,17 @@ data class Folder(
         )
     }
 
+    override fun fillXmlElement(element: Element) {
+        parent?.let { element.addContent(referenceElement("folder", it)) }
+        name?.let { element.addContent(textElement("name", it)) }
+        note?.let { element.addContent(textElement("note", it)) }
+        rank?.let { element.addContent(longElement("rank", it)) }
+        hidden?.let { element.addContent(booleanElement("hidden", it)) }
+    }
+
     companion object {
+        const val TAG_NAME = "folder"
+
         fun fromXML(element: Element): Folder {
             val operation = element.attr("op")?.toOperation() ?: Operation.CREATE
             val id = element.attr("id")!!

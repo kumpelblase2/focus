@@ -21,6 +21,20 @@ data class RelativeDuration(
             else -> date.plus(unit.duration.multipliedBy(amount))
         }
     }
+
+    override fun toString(): String {
+        val applyTo = if(this.applyTo == RelativeDurationApplicableField.CURRENT_DATE) "~" else "@"
+        val amount = this.amount.toString()
+        val schedule = when(this.unit) {
+            ChronoUnit.YEARS -> "y"
+            ChronoUnit.MONTHS -> "m"
+            ChronoUnit.WEEKS -> "w"
+            ChronoUnit.DAYS -> "d"
+            else -> throw IllegalStateException()
+        }
+
+        return applyTo + amount + schedule
+    }
 }
 
 val INTERVAL_FORMAT = "([~@])(\\d+)([ymdw])".toRegex()

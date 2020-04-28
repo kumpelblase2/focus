@@ -1,6 +1,7 @@
 package de.eternalwings.focus.view
 
 import de.eternalwings.focus.Reference
+import de.eternalwings.focus.storage.data.Operation
 import de.eternalwings.focus.storage.data.Task
 import java.time.ZonedDateTime
 
@@ -55,5 +56,40 @@ data class OmniTask(
 
     override val blocked: Boolean by lazy {
         contexts.any { it.prohibitsNextAction } || parent?.blocked ?: false
+    }
+
+    override fun toTask(): Task {
+        return Task(
+            this.id,
+            null,
+            this.inbox,
+            this.parent?.let { Reference(it.id) },
+            this.name,
+            this.note,
+            this.rank,
+            this.dropped,
+            null, // TODO
+            emptySet(),
+            this.deferred,
+            this.due,
+            this.completed,
+            this.estimatedMinutes,
+            this.creation.creationTime,
+            this.creation.order,
+            this.actionOrder,
+            this.flagged,
+            this.completedByChildren,
+            this.repetitionRule,
+            this.repeat,
+            this.repetitionMethod.name,
+            this.modified,
+            Operation.UPDATE
+        )
+    }
+
+    companion object {
+        fun create() {
+
+        }
     }
 }

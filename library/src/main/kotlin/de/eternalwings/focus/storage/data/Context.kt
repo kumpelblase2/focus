@@ -1,6 +1,5 @@
 package de.eternalwings.focus.storage.data
 
-import de.eternalwings.focus.Referencable
 import de.eternalwings.focus.Reference
 import de.eternalwings.focus.storage.xml.*
 import org.jdom2.Element
@@ -20,8 +19,10 @@ data class Context(
     override val modified: ZonedDateTime?,
     val tasksUserOrdered: Boolean?,
     override val operation: Operation = Operation.CREATE
-) : Referencable, WithCreationTimestamp, WithModificationTimestamp, WithRank, CanHide, WithOperation,
-    Mergeable<Context, Context> {
+) : BaseChangesetElement(), WithCreationTimestamp, WithModificationTimestamp, WithRank, CanHide, WithOperation,
+    Mergeable<Context> {
+
+    override val tagName = TAG_NAME
 
     override fun mergeFrom(other: Context): Context {
         return Context(
@@ -40,7 +41,20 @@ data class Context(
         )
     }
 
+    override fun fillXmlElement(element: Element) {
+        parentContext?.let { element.addContent(referenceElement("context", it)) }
+        name?.let { element.addContent(textElement("name", it)) }
+        note?.let { element.addContent(textElement("note", it)) }
+        rank?.let { element.addContent(longElement("rank", it)) }
+        hidden?.let { element.addContent(booleanElement("hidden", it)) }
+        prohibitsNextAction?.let { element.addContent(booleanElement("prohibits-next-action", it)) }
+        location?.let { element.addContent(it.toXML()) }
+        tasksUserOrdered?.let { element.addContent(booleanElement("tasks-user-ordered", it)) }
+    }
+
     companion object {
+        const val TAG_NAME = "context"
+
         fun fromXML(element: Element): Context {
             val id = element.attr("id")!!
             val parent = element.reference("context")

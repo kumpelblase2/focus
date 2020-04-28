@@ -1,6 +1,7 @@
 package de.eternalwings.focus.view
 
 import de.eternalwings.focus.Referencable
+import de.eternalwings.focus.storage.data.Task
 import java.time.ZonedDateTime
 
 abstract class OmniTasklike : Referencable {
@@ -21,4 +22,19 @@ abstract class OmniTasklike : Referencable {
     abstract val modified: ZonedDateTime?
 
     abstract val blocked: Boolean
+
+    val isStillDeferred: Boolean
+        get() = (this.deferred?.isAfter(ZonedDateTime.now()) ?: false) || parent?.isStillDeferred ?: false
+
+    val parents: List<OmniTasklike>
+        get() {
+            return if(parent == null) {
+                emptyList()
+            } else {
+                val parentsParents = parent?.parents ?: emptyList()
+                parentsParents + parent!!
+            }
+        }
+
+    abstract fun toTask(): Task
 }

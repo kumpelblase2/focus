@@ -1,6 +1,5 @@
 package de.eternalwings.focus.storage.data
 
-import de.eternalwings.focus.Referencable
 import de.eternalwings.focus.storage.plist.Plist
 import de.eternalwings.focus.storage.plist.PlistObject
 import de.eternalwings.focus.storage.xml.XmlConstants.NAMESPACE
@@ -17,8 +16,10 @@ data class Perspective(
     val content: PlistObject<*>?,
     override val operation: Operation = Operation.CREATE
     // TODO missing icon attachment
-) : Referencable, WithCreationTimestamp, WithOperation,
-    Mergeable<Perspective, Perspective> {
+) : BaseChangesetElement(), WithCreationTimestamp, WithOperation,
+    Mergeable<Perspective> {
+
+    override val tagName = TAG_NAME
 
     override fun mergeFrom(other: Perspective): Perspective {
         return Perspective(
@@ -29,7 +30,16 @@ data class Perspective(
         )
     }
 
+    override fun fillXmlElement(element: Element) {
+        content?.let { content ->
+            val plistElement = Plist.toElement(content)
+            element.addContent(Element("plist").also { it.addContent(plistElement) })
+        }
+    }
+
     companion object {
+        const val TAG_NAME = "perspective"
+
         fun fromXML(element: Element): Perspective {
             val id = element.attr("id")!!
             val addedElement = element.getChild("added", NAMESPACE)

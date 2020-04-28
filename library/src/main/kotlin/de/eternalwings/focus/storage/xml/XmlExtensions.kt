@@ -52,3 +52,33 @@ fun String.date(): ZonedDateTime? {
 fun Element.reference(name: String): Reference? {
     return this.getChild(name, NAMESPACE)?.getAttributeValue("idref")?.asReference()
 }
+
+fun referenceElement(name: String, reference: Reference): Element {
+    return Element(name, NAMESPACE).also {
+        it.setAttribute("idref", reference.id)
+    }
+}
+
+fun textElement(name: String, content: String): Element {
+    return Element(name, NAMESPACE).also {
+        it.addContent(content)
+    }
+}
+
+fun dateElement(name: String, date: ZonedDateTime): Element {
+    return Element(name, NAMESPACE).also {
+        it.addContent(TIME_FORMAT.format(date))
+    }
+}
+
+fun longElement(name: String, value: Long): Element {
+    return Element(name, NAMESPACE).also {
+        it.addContent(value.toString())
+    }
+}
+
+fun booleanElement(name: String, value: Boolean): Element {
+    return Element(name, NAMESPACE).also {
+        it.addContent(value.toString())
+    }
+}

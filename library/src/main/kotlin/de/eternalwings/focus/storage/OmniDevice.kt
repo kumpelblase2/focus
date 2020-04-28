@@ -1,6 +1,7 @@
 package de.eternalwings.focus.storage
 
 import de.eternalwings.focus.storage.plist.ArrayObject
+import de.eternalwings.focus.storage.plist.DateObject
 import de.eternalwings.focus.storage.plist.DictionaryObject
 import de.eternalwings.focus.storage.plist.StringObject
 import oshi.SystemInfo
@@ -29,6 +30,34 @@ data class OmniDevice(
     val registerDate: OffsetDateTime,
     val tailIds: Collection<String>
 ) {
+
+    fun toPlist(): DictionaryObject {
+        return DictionaryObject(
+            mapOf(
+                "ApplicationMarketingVersion" to StringObject(marketingVersion),
+                "CurrentFrameworkVersion" to StringObject(frameworkVersion),
+                "HardwareCPUCount" to StringObject(cpuCount),
+                "HardwareCPUType" to StringObject(cpuType),
+                "HardwareCPUTypeDescription" to StringObject(cpuName),
+                "HardwareCPUTypeName" to StringObject(arch),
+                "HardwareModel" to StringObject(model),
+                "OFMSyncClientModelVersion" to StringObject(syncVersion),
+                "OFMSyncClientSupportedCapabilities" to ArrayObject(supportedCapabilities.map { StringObject(it) }),
+                "OSVersion" to StringObject(osVersion),
+                "OSVersionNumber" to StringObject(osVersionNumber),
+                "XMLSyncClientSupportedCapabilities" to ArrayObject(xmlSupportedCapabilities.map { StringObject(it) }),
+                "bundleIdentifier" to StringObject(bundleId),
+                "bundleVersion" to StringObject(bundleVersion),
+                "clientIdentifier" to StringObject(clientId),
+                "hostID" to StringObject(hostId),
+                "lastSyncDate" to DateObject(lastSync),
+                "name" to StringObject(name),
+                "registrationDate" to DateObject(registerDate),
+                "tailIdentifiers" to ArrayObject(tailIds.map { StringObject(it) })
+            )
+        )
+    }
+
     companion object {
 
         const val MARKETING_VERSION = "3.7"

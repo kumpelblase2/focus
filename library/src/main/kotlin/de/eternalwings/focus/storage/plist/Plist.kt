@@ -42,7 +42,7 @@ object Plist {
         return Element("plist").also { it.setAttribute("version", "1.0") }
     }
 
-    private fun toElement(element: PlistObject<*>): Element {
+    public fun toElement(element: PlistObject<*>): Element {
         return when (element) {
             is StringObject -> Element("string").also { it.addContent(element.content) }
             is ArrayObject -> Element("array").also {
