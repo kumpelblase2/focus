@@ -3,6 +3,7 @@ package de.eternalwings.focus.commands
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.defaultLazy
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import de.eternalwings.focus.ErrorCodes
 import de.eternalwings.focus.HostnameResolver
@@ -25,6 +26,7 @@ class RegisterCommand :
         help = "The ID to use for the device. If not specified a random ID will be used. Has to be length 11, and use only alphanumeric letters with the addition of '-'"
     )
     val model by option("--model", help = "The computer model").default("unspecified")
+    val save by option("--save", "-s", help = "Save the given device as the device to be used by focus for changes.").flag()
 
     override fun run() {
         val storage = loadStorage()
@@ -38,9 +40,12 @@ class RegisterCommand :
         }
         val device = OmniDevice.create(name, idToUse, model)
         storage.registerDevice(device)
-        println("Registered device '${device.name}' with ID '${device.clientId}'")
-        config[Configuration.device] = device.clientId
-        config.save()
+        println("Registered device '${device.name}' with ID '${device.clientId}'.")
+        if(config[Configuration.device] == null || save) {
+            config[Configuration.device] = device.clientId
+            println("Now using device '${device.name}' as author of changes.")
+            config.save()
+        }
     }
 
     private fun generateValidId(takenIds: Collection<String>): String {
@@ -51,5 +56,4 @@ class RegisterCommand :
 
         return generatedId
     }
-
 }

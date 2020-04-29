@@ -51,6 +51,7 @@ interface OmniStorage {
     val changeSets: List<Changeset>
 
     fun registerDevice(device: OmniDevice)
+    fun removeDevice(clientId: String)
 
     fun saveTo(location: Path) {
         check(Files.exists(location)) { "Specified location does not exist" }

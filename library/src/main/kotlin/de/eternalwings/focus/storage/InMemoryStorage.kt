@@ -25,4 +25,8 @@ class InMemoryStorage(
     override fun registerDevice(device: OmniDevice) {
         devices += device
     }
+
+    override fun removeDevice(clientId: String) {
+        devices = devices.filter { it.clientId != clientId }
+    }
 }

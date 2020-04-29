@@ -1,6 +1,7 @@
 package de.eternalwings.focus.storage
 
 import de.eternalwings.focus.storage.FilenameConstants.CAPABILITY_FILE_NAME
+import de.eternalwings.focus.storage.FilenameConstants.CLIENT_FILE_DATE_FORMAT
 import de.eternalwings.focus.storage.FilenameConstants.CLIENT_FILE_NAME
 import de.eternalwings.focus.storage.FilenameConstants.CONTENT_FILE_NAME
 import de.eternalwings.focus.storage.data.Changeset
@@ -9,20 +10,14 @@ import de.eternalwings.focus.storage.data.OmniContainer
 import de.eternalwings.focus.storage.plist.DictionaryObject
 import de.eternalwings.focus.storage.plist.Plist
 import org.jdom2.input.SAXBuilder
-import org.jdom2.output.Format
-import org.jdom2.output.XMLOutputter
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardOpenOption
-import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import java.util.stream.Collectors
 import java.util.stream.Stream
-import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
-import java.util.zip.ZipOutputStream
 import kotlin.streams.toList
 
 open class NormalStorage(override val location: Path) : OmniStorage, PhysicalStorage {
@@ -36,10 +31,18 @@ open class NormalStorage(override val location: Path) : OmniStorage, PhysicalSto
     override fun registerDevice(device: OmniDevice) {
         val deviceId = device.clientId
         val date = ZonedDateTime.now()
-        val dateString = date.format(FilenameConstants.CLIENT_FILE_DATE_FORMAT)
+        val dateString = date.format(CLIENT_FILE_DATE_FORMAT)
         val path = location.resolve("$dateString=$deviceId.client")
         val lastChangeset = changeSetFiles.last()
         Plist.writePlist(device.copy(tailIds = listOf(lastChangeset.id)).toPlist(), path)
+    }
+
+    override fun removeDevice(clientId: String) {
+        val deviceEntries = devices.filter { it.clientId == clientId }
+        deviceEntries.forEach { device ->
+            val filename = CLIENT_FILE_DATE_FORMAT.format(device.lastSync) + "=" + device.clientId + CLIENT_FILE_NAME
+            Files.delete(location.resolve(filename))
+        }
     }
 
     override val changeSetFiles: List<ChangesetFile>

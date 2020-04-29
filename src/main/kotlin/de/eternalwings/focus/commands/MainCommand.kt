@@ -15,6 +15,6 @@ class MainCommand() : NoOpCliktCommand(
 """.trimIndent()
 ) {
     init {
-        subcommands(QueryCommand(), RegisterCommand(), CreateConfigCommand(), PerspectiveCommand(), StorageCommand())
+        subcommands(QueryCommand(), DeviceCommand(), CreateConfigCommand(), PerspectiveCommand(), StorageCommand())
     }
 }
