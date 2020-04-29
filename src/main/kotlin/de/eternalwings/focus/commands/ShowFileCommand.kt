@@ -3,7 +3,6 @@ package de.eternalwings.focus.commands
 import com.github.ajalt.clikt.parameters.arguments.argument
 import de.eternalwings.focus.ErrorCodes
 import de.eternalwings.focus.failWith
-import de.eternalwings.focus.storage.PhysicalStorage
 import java.nio.charset.StandardCharsets
 
 class ShowFileCommand : UnlockedStorageBasedCommand(
@@ -15,10 +14,6 @@ class ShowFileCommand : UnlockedStorageBasedCommand(
 
     override fun run() {
         val storage = getUnlockedStorage()
-        if (storage !is PhysicalStorage) {
-            failWith("", ErrorCodes.INTERNAL_ERROR)
-        }
-
         val foundFile = storage.changeSetFiles.find { it.id == id }
             ?: failWith("No such file found.", ErrorCodes.GENERIC_ARGUMENT_ERROR)
 

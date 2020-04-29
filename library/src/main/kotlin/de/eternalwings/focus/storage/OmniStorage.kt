@@ -12,7 +12,7 @@ import java.time.OffsetDateTime
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
-interface PhysicalStorage {
+interface PhysicalOmniStorage : OmniStorage {
     val location: Path
     val changeSetFiles: List<ChangesetFile>
 
@@ -90,7 +90,7 @@ interface OmniStorage {
     }
 
     companion object {
-        fun fromPath(containerPath: Path): OmniStorage {
+        fun fromPath(containerPath: Path): PhysicalOmniStorage {
             val path = if (containerPath.fileName.toString().endsWith(".ofocus")) {
                 containerPath
             } else {

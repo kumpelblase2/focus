@@ -1,8 +1,5 @@
 package de.eternalwings.focus.commands
 
-import de.eternalwings.focus.ErrorCodes
-import de.eternalwings.focus.failWith
-import de.eternalwings.focus.storage.PhysicalStorage
 import java.time.LocalDateTime
 
 class ListFilesInStorageCommand :
@@ -10,13 +7,9 @@ class ListFilesInStorageCommand :
 
     override fun run() {
         val storage = loadStorage()
-        if (storage !is PhysicalStorage) {
-            failWith("Internal problem - storage is not physical?!", ErrorCodes.INTERNAL_ERROR)
-        }
-
         storage.changeSetFiles.forEach { file ->
             val timestampValue = if (file.timestamp == LocalDateTime.MIN) {
-                "<Initial>\t\t"
+                "<Initial>\t"
             } else {
                 file.timestamp.toString()
             }

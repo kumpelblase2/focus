@@ -20,7 +20,7 @@ import java.util.stream.Stream
 import java.util.zip.ZipInputStream
 import kotlin.streams.toList
 
-open class NormalStorage(override val location: Path) : OmniStorage, PhysicalStorage {
+open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
     override val changeSets: List<Changeset> by lazy {
         changeSetFiles.parallelStream()
             .map(this::createChangesetForFile)

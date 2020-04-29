@@ -11,6 +11,7 @@ import de.eternalwings.focus.config.config
 import de.eternalwings.focus.failWith
 import de.eternalwings.focus.storage.EncryptedOmniStorage
 import de.eternalwings.focus.storage.OmniStorage
+import de.eternalwings.focus.storage.PhysicalOmniStorage
 import de.eternalwings.focus.warning
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -36,7 +37,7 @@ abstract class StorageBasedCommand(
 ) {
     val location by option("--location", "-l", help = "The location for the omnifocus file storage").path(mustExist = true, canBeFile = false)
 
-    fun loadStorage(): OmniStorage {
+    fun loadStorage(): PhysicalOmniStorage {
         return OmniStorage.fromPath(getStorageLocation())
     }
 
@@ -70,7 +71,7 @@ abstract class UnlockedStorageBasedCommand(
     protected val password by option("-p", "--password", help = "The password for the omnifocus storage").default("")
     protected val readPassword by option("-P", "--ask-password", help = "Provide password secretly").flag()
 
-    protected fun getUnlockedStorage(): OmniStorage {
+    protected fun getUnlockedStorage(): PhysicalOmniStorage {
         val storage = loadStorage()
         if (storage is EncryptedOmniStorage) {
             val password = getPassword()
