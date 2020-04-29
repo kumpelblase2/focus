@@ -33,9 +33,9 @@ object TaskListPrinter {
             Table() {
                 header("ID", 11, 13) { it.id }
                 header("Name", 40) { it.name }
-                header("Parent", 10, 40) { task -> task.parents.joinToString("->") { it.name } }
-                header("Contexts", 10, 15) { it.contexts.joinToString { context -> context.name } }
-                header("Note", 40) { it.note.replace("\n", "").trim() }
+                header("Parent", 6, 40) { task -> task.parents.joinToString("->") { it.name } }
+                header("Contexts", 7, 15) { it.contexts.joinToString { context -> context.name } }
+                header("Note", 10) { it.note.replace("\n", "").trim() }
                 header("Due", 18) { it.due }
                 header("Deferred", 18) { it.deferred }
                 header("Completed", 18) { it.completed }
