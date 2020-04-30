@@ -20,7 +20,7 @@ dependencies {
     implementation("com.github.h0tk3y.betterParse:better-parse-jvm:0.4.0-alpha-3")
     implementation("com.github.ajalt:clikt:2.6.0")
     implementation("com.google.code.gson:gson:2.8.6")
-    implementation("com.uchuhimo:konf:0.22.1")
+    implementation("com.uchuhimo:konf-core:0.22.1")
     implementation("com.uchuhimo:konf-hocon:0.22.1")
 
     testCompile("org.junit.jupiter:junit-jupiter-api:5.6.2")
