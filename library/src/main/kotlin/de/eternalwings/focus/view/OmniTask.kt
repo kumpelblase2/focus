@@ -8,7 +8,7 @@ import java.time.ZonedDateTime
 data class OmniTask(
     override val id: String,
     val inbox: Boolean,
-    override val parent: OmniTasklike?, // TODO is this really always a project?
+    override val parent: OmniTasklike?,
     override val creation: Creation,
     override val name: String,
     override val note: String,
