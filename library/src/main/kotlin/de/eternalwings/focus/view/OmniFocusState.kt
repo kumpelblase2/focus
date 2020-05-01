@@ -8,8 +8,11 @@ import java.util.*
 
 class OmniFocusState(private val storage: OmniStorage) {
     var contexts: List<OmniContext> = emptyList()
+        private set
     var folder: List<OmniFolder> = emptyList()
+        private set
     var tasks: List<OmniTasklike> = emptyList()
+        private set
 
     val byId: Map<String, Referencable> by lazy {
         val allElements: List<Referencable> = contexts + folder + tasks
