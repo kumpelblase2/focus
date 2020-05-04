@@ -57,7 +57,9 @@ fun Element.reference(name: String): Reference? {
 
 fun referenceElement(name: String, reference: Reference): Element {
     return Element(name, NAMESPACE).also {
-        it.setAttribute("idref", reference.id)
+        if(reference.id != null) {
+            it.setAttribute("idref", reference.id)
+        }
     }
 }
 

@@ -108,8 +108,6 @@ interface OmniStorage {
         changeSets.forEach { changeset ->
             val output = XMLOutputter(Format.getPrettyFormat())
             val xmlDocument = changeset.container.toXML()
-
-
             val filename = changeset.createFilename()
             ZipOutputStream(
                 Files.newOutputStream(

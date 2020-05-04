@@ -1,6 +1,7 @@
 package de.eternalwings.focus.storage.data
 
 import de.eternalwings.focus.Reference
+import de.eternalwings.focus.mergeInto
 import de.eternalwings.focus.storage.xml.*
 import org.jdom2.Element
 import java.time.ZonedDateTime
@@ -27,7 +28,7 @@ data class Context(
     override fun mergeFrom(other: Context): Context {
         return Context(
             id,
-            other.parentContext ?: parentContext,
+            other.parentContext.mergeInto(parentContext),
             other.added ?: added,
             other.order ?: order,
             other.name ?: name,

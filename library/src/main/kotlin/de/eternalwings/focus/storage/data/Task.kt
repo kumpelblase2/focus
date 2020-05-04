@@ -1,6 +1,7 @@
 package de.eternalwings.focus.storage.data
 
 import de.eternalwings.focus.Reference
+import de.eternalwings.focus.mergeInto
 import de.eternalwings.focus.storage.xml.*
 import org.jdom2.Element
 import java.time.ZonedDateTime
@@ -41,14 +42,15 @@ data class Task(
     override fun mergeFrom(other: Task): Task {
         return Task(
             id,
-            other.project ?: project,
+            if (project != null && other.project != null) project.mergeFrom(other.project) else other.project
+                ?: project,
             other.inbox ?: inbox,
-            other.parent ?: parent,
+            other.parent.mergeInto(parent),
             other.name ?: name,
             other.note ?: note,
             other.rank ?: rank,
             other.hidden ?: hidden,
-            other.context ?: context,
+            other.context.mergeInto(context),
             additionalContexts,
             other.start ?: start,
             other.due ?: due,

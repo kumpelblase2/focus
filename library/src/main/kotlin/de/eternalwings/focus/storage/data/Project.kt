@@ -1,6 +1,7 @@
 package de.eternalwings.focus.storage.data
 
 import de.eternalwings.focus.Reference
+import de.eternalwings.focus.mergeInto
 import de.eternalwings.focus.storage.xml.*
 import org.jdom2.Element
 import java.time.ZonedDateTime
@@ -12,7 +13,18 @@ data class Project(
     val nextReview: ZonedDateTime?,
     val reviewInterval: String?,
     val status: String?
-) {
+) : Mergeable<Project> {
+
+    override fun mergeFrom(other: Project): Project {
+        return Project(
+            other.folder.mergeInto(folder),
+            other.singleton ?: singleton,
+            other.lastReview ?: lastReview,
+            other.nextReview ?: nextReview,
+            other.reviewInterval ?: reviewInterval,
+            status ?: status
+        )
+    }
 
     fun toXML(): Element {
         return Element(TAG_NAME, XmlConstants.NAMESPACE).also {

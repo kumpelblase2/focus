@@ -37,7 +37,7 @@ data class OmniTask(
         other.note ?: "",
         other.rank,
         other.hidden,
-        other.allContexts.map(resolveContext).toSet(),
+        other.allContexts.filter { it.id != null }.map(resolveContext).toSet(),
         other.start,
         other.due,
         other.completed,

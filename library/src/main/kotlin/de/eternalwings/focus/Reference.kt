@@ -13,4 +13,12 @@ data class Reference(
     val id: String? = null
 )
 
+internal fun Reference?.mergeInto(other: Reference?): Reference? {
+    return when {
+        this == null -> other
+        this.id == null -> null
+        else -> this
+    }
+}
+
 fun String.asReference() = Reference(this)

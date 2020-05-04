@@ -1,10 +1,14 @@
 package de.eternalwings.focus.storage.data
 
 import de.eternalwings.focus.Reference
+import de.eternalwings.focus.mergeInto
 import de.eternalwings.focus.storage.xml.*
 import org.jdom2.Element
 import java.time.ZonedDateTime
 
+/**
+ * Creation of modification information for an Alarm/Reminder.
+ */
 data class Alarm(
     override val id: String,
     override val added: ZonedDateTime?,
@@ -23,7 +27,7 @@ data class Alarm(
             id,
             other.added ?: added,
             other.order ?: order,
-            other.task ?: task,
+            other.task.mergeInto(task),
             other.kind ?: kind,
             other.variant ?: variant,
             other.fireAt ?: fireAt,
