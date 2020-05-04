@@ -12,6 +12,13 @@ The goals behind `focus` are thus:
 2) provide a querying mechanism to provide filtering mechanics similar to perspectives
 3) play well with other tools
 
+## Installation
+
+This library requires Java to be installed, at least Version 8.
+To install this library, please download the jar provided under the releases on github. You can place this wherever you like, just make sure the user has access and can execute it there.
+You can then simply run: `java -jar focus-full.jar`. Alternatively, you can create an alias or a script to execute this for you. An alias in bash would look like this: `alias focus='java -jar /path/to/focus.jar'`
+
+There are currently no packages available for specific distributions but feel free to create them.
 
 ## Usage
 

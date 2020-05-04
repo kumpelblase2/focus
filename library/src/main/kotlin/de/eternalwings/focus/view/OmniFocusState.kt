@@ -33,8 +33,9 @@ class OmniFocusState(private val storage: OmniStorage) {
                     is TaskToTag -> {
                         when (item.operation) {
                             Operation.CREATE -> {
-                                val task = mergedTasks[item.task!!.id] ?: TODO()
-                                mergedTasks[item.task.id] = task.copyWithContext(item.context!!)
+                                val id = item.task!!.id!!
+                                val task = mergedTasks[id] ?: TODO()
+                                mergedTasks[id] = task.copyWithContext(item.context!!)
                             }
                             Operation.REFERENCE -> {
                             }

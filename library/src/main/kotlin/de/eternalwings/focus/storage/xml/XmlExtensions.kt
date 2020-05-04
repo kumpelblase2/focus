@@ -50,7 +50,9 @@ fun String.date(): ZonedDateTime? {
 }
 
 fun Element.reference(name: String): Reference? {
-    return this.getChild(name, NAMESPACE)?.getAttributeValue("idref")?.asReference()
+    val child = this.getChild(name, NAMESPACE) ?: return null
+    val attributeValue = child.getAttributeValue("idref") ?: return Reference()
+    return attributeValue.asReference()
 }
 
 fun referenceElement(name: String, reference: Reference): Element {
