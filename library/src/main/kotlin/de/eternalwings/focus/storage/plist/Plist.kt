@@ -14,11 +14,17 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
 
+/**
+ * Object to parse/write plist elements from/to xml.
+ */
 object Plist {
     private val PLIST_DOCTYPE
         get() = DocType("plist", "-//Apple//DTD PLIST 1.0//EN", "http://www.apple.com/DTDs/PropertyList-1.0.dtd")
     private val TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX")
 
+    /**
+     * Parses the contents of the given file as a plist document.
+     */
     fun parsePlist(file: Path): PlistObject<*> {
         val builder = SAXBuilder()
         val content = builder.build(file.toFile())
@@ -26,10 +32,16 @@ object Plist {
         return parsePlistElement(plistContainer.children.first())
     }
 
+    /**
+     * Writes the given plist element to the provided location.
+     */
     fun writePlist(plist: PlistObject<*>, location: Path) {
         writePlist(plist, FileOutputStream(location.toFile()))
     }
 
+    /**
+     * Writes the given plist element to the provided output stream.
+     */
     fun writePlist(plist: PlistObject<*>, target: OutputStream) {
         val output = XMLOutputter(Format.getPrettyFormat())
         val root = createRootPlistElement()
@@ -42,7 +54,10 @@ object Plist {
         return Element("plist").also { it.setAttribute("version", "1.0") }
     }
 
-    public fun toElement(element: PlistObject<*>): Element {
+    /**
+     * Turns the given plist element into its xml representation.
+     */
+    fun toElement(element: PlistObject<*>): Element {
         return when (element) {
             is StringObject -> Element("string").also { it.addContent(element.content) }
             is ArrayObject -> Element("array").also {
@@ -64,6 +79,9 @@ object Plist {
         }
     }
 
+    /**
+     * Turns the given xml element into a plist.
+     */
     fun parsePlistElement(element: Element): PlistObject<*> {
         return when (element.name) {
             "dict" -> DictionaryObject(element.children.chunked(2).map(Plist::createDictEntry).toMap())

@@ -12,19 +12,40 @@ import java.time.OffsetDateTime
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
+/**
+ * An [OmniStorage] that has a "physical" representation on this computer.
+ */
 interface PhysicalOmniStorage : OmniStorage {
+    /**
+     * The filesystem location of this storage
+     */
     val location: Path
+
+    /**
+     * The files that contain the changesets of this storage
+     */
     val changeSetFiles: List<ChangesetFile>
 
+    /**
+     * Returns the data inside the given changeset. Normal changesets are zip files containing an xml file. This
+     * returns the contents of that xml file.
+     */
     fun getContentOfFile(file: ChangesetFile): ByteArray
 }
 
+/**
+ * An object representing the underlying OmniFocus database.
+ */
 interface OmniStorage {
     /**
      * The devices registered to this storage. This includes past versions of the same client, thus
      * this list may contain the same client multiple times.
      */
     val devices: Collection<OmniDevice>
+
+    /**
+     * Same as [devices] but only the most recent versions of each device.
+     */
     val uniqueDevices: Collection<OmniDevice>
         get() = devices.lastUniqueBy(OmniDevice::clientId, OmniDevice::lastSync)
 
@@ -46,11 +67,25 @@ interface OmniStorage {
         return idMap.values.toSet()
     }
 
-
+    /**
+     * The capabilities (i.e. features) that are enabled on this storage.
+     */
     val capabilities: Collection<OmniCapability>
+
+    /**
+     * The changesets (or "transactions") that are present in this storage.
+     */
     val changeSets: List<Changeset>
 
+    /**
+     * Registers a new device in this storage which can then be used to track
+     * synchronization progress as well as author changesets.
+     */
     fun registerDevice(device: OmniDevice)
+
+    /**
+     * Removes a device from the store.
+     */
     fun removeDevice(clientId: String)
 
     fun saveTo(location: Path) {
@@ -90,6 +125,12 @@ interface OmniStorage {
     }
 
     companion object {
+        /**
+         * Creates an in memory representation of the OmniFocus database found at the given location.
+         *
+         * @return An [OmniStorage] baked by physical files that may or may not be [EncryptedOmniStorage].
+         * @throws IllegalArgumentException When the path does not exist or is not a directory ending with ".ofocus"
+         */
         fun fromPath(containerPath: Path): PhysicalOmniStorage {
             val path = if (containerPath.fileName.toString().endsWith(".ofocus")) {
                 containerPath
@@ -115,6 +156,14 @@ interface OmniStorage {
 }
 
 interface EncryptedOmniStorage : OmniStorage {
+    /**
+     * Provide the password for this encrypted storage to be used to decrypt the files within.
+     */
     fun providePassword(password: CharArray)
+
+    /**
+     * Creates an in memory copy of this storage but unencrypted. This can can be saved via [saveTo] to create an
+     * unencrypted copy in the filesystem.
+     */
     fun unencryptedCopy(): OmniStorage
 }
