@@ -48,7 +48,7 @@ data class OmniContext(
             this.location?.toLocation(),
             this.modificationTime,
             this.tasksUserOrdered,
-            Operation.UPDATE
+            Operation.CREATE
         )
     }
 }

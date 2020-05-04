@@ -79,7 +79,7 @@ data class OmniProject(
             null,
             null,
             this.modified,
-            Operation.UPDATE
+            Operation.CREATE
         )
     }
 }

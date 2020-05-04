@@ -83,7 +83,7 @@ data class OmniTask(
             this.repeat,
             this.repetitionMethod.name,
             this.modified,
-            Operation.UPDATE
+            Operation.CREATE
         )
     }
 
