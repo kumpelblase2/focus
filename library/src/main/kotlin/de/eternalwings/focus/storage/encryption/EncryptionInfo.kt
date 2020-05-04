@@ -1,4 +1,4 @@
-package de.eternalwings.focus.storage
+package de.eternalwings.focus.storage.encryption
 
 import de.eternalwings.focus.storage.plist.DictionaryObject
 

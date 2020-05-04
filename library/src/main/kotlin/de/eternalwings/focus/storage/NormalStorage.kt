@@ -10,23 +10,33 @@ import de.eternalwings.focus.storage.data.OmniContainer
 import de.eternalwings.focus.storage.plist.DictionaryObject
 import de.eternalwings.focus.storage.plist.Plist
 import org.jdom2.input.SAXBuilder
+import org.jdom2.output.Format
+import org.jdom2.output.XMLOutputter
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.time.ZonedDateTime
 import java.util.stream.Collectors
 import java.util.stream.Stream
+import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
 import kotlin.streams.toList
 
 open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
-    override val changeSets: List<Changeset> by lazy {
+    private val fileChangesets: List<Changeset> by lazy {
         changeSetFiles.parallelStream()
             .map(this::createChangesetForFile)
-            .sorted(Comparator.comparing(Changeset::timestamp))
             .collect(Collectors.toList())
     }
+
+    override val changeSets: List<Changeset>
+        get() = (fileChangesets + transientChangesets).sortedBy { it.timestamp }
+
+    private var transientChangesets: List<Changeset> = emptyList()
 
     override fun registerDevice(device: OmniDevice) {
         val deviceId = device.clientId
@@ -100,6 +110,37 @@ open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
                 .map { OmniCapability.fromPlist(it as DictionaryObject) }
                 .toList()
         }
+
+    override fun appendChangeset(changeset: Changeset, persist: Boolean) {
+        if (persist) {
+            this.save(changeset)
+        } else {
+            transientChangesets = transientChangesets + changeset
+        }
+    }
+
+    override fun save(changeset: Changeset) {
+        val output = XMLOutputter(Format.getPrettyFormat())
+        val xmlDocument = changeset.container.toXML()
+        val filename = changeset.createFilename()
+        val byteOutput = ByteArrayOutputStream()
+        ZipOutputStream(byteOutput).use {
+            it.putNextEntry(ZipEntry(CONTENT_FILE_NAME))
+            output.output(xmlDocument, it.writer())
+            it.closeEntry()
+        }
+        createChangesetFile(filename, byteOutput.toByteArray())
+    }
+
+    protected open fun createChangesetFile(filename: String, output: ByteArray) {
+        Files.write(
+            location.resolve(filename),
+            output,
+            StandardOpenOption.TRUNCATE_EXISTING,
+            StandardOpenOption.CREATE,
+            StandardOpenOption.WRITE
+        )
+    }
 
     companion object {
         private val xmlBuilder = SAXBuilder()

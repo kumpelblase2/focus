@@ -1,6 +1,10 @@
-package de.eternalwings.focus.storage
+package de.eternalwings.focus.storage.encryption
 
 import de.eternalwings.focus.read
+import de.eternalwings.focus.storage.encryption.EncryptionConstants.FILE_MAC_PREFIX
+import de.eternalwings.focus.storage.encryption.EncryptionConstants.SEG_IV_LENGTH
+import de.eternalwings.focus.storage.encryption.EncryptionConstants.SEG_MAC_LENGTH
+import de.eternalwings.focus.storage.encryption.EncryptionConstants.SEG_PAGE_SIZE
 import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -35,14 +39,15 @@ class FileDecryptor(aesKey: ByteArray, private val hmacKey: ByteArray) {
     }
 
     fun checkHMAC(fileInput: RandomAccessFile, start: Int, end: Int, fileMac: ByteArray) {
-        val hmac = macWithKey("HmacSHA256", hmacKey)
+        val hmac = createHmac()
+        val segmentMac = createHmac()
         hmac.update(FILE_MAC_PREFIX)
         for (segment in getSegments(start, end)) {
             fileInput.seek(segment.start.toLong())
             val segmentIV = fileInput.read(SEG_IV_LENGTH)
             val segmentMAC = fileInput.read(SEG_MAC_LENGTH)
 
-            val segmentMac = macWithKey("HmacSHA256", hmacKey)
+
             segmentMac.update(segmentIV)
             segmentMac.update(segment.index.toByteArray())
             segmentMac.update(fileInput.read(segment.length))
@@ -67,28 +72,19 @@ class FileDecryptor(aesKey: ByteArray, private val hmacKey: ByteArray) {
             fileInput.seek(segment.start.toLong() + SEG_IV_LENGTH + SEG_MAC_LENGTH)
             buffer.put(aes.update(fileInput.read(segment.length)))
             val final = aes.doFinal()
-            if(final.isNotEmpty())
+            if (final.isNotEmpty())
                 buffer.put(final)
         }
 
         return buffer.array()
     }
 
-    companion object {
-        private const val FILE_MAC_PREFIX: Byte = 0x01
-        const val FILE_MAC_LENGTH = 32
-        private const val AES_KEY_SIZE = 16
-        private const val HMAC_KEY_SIZE = 16
-        private const val SEG_IV_LENGTH = 12
-        private const val SEG_MAC_LENGTH = 20
-        private const val SEG_PAGE_SIZE = 65536
+    private fun createHmac(): Mac {
+        return Mac.getInstance("HmacSHA256").also {
+            it.init(SecretKeySpec(hmacKey, "HmacSHA256"))
+        }
     }
-}
 
-fun macWithKey(name: String, key: ByteArray): Mac {
-    val mac = Mac.getInstance(name)
-    mac.init(SecretKeySpec(key, name))
-    return mac
 }
 
 fun Int.toByteArray(): ByteArray {

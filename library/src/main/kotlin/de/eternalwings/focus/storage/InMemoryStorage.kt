@@ -9,8 +9,10 @@ class InMemoryStorage(
 ) : OmniStorage {
     override var devices: Collection<OmniDevice> = devices
         private set
+
     override var capabilities: Collection<OmniCapability> = capabilities
         private set
+
     override var changeSets: List<Changeset> = changeSets
         private set
 
@@ -20,5 +22,9 @@ class InMemoryStorage(
 
     override fun removeDevice(clientId: String) {
         devices = devices.filter { it.clientId != clientId }
+    }
+
+    override fun appendChangeset(changeset: Changeset, persist: Boolean) {
+        changeSets = changeSets + changeset
     }
 }

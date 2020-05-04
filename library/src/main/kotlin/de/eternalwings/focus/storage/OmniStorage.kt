@@ -1,13 +1,13 @@
 package de.eternalwings.focus.storage
 
-import de.eternalwings.focus.storage.data.Changeset
-import de.eternalwings.focus.storage.data.ChangesetFile
+import de.eternalwings.focus.storage.data.*
 import de.eternalwings.focus.storage.plist.Plist
 import org.jdom2.output.Format
 import org.jdom2.output.XMLOutputter
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -31,6 +31,11 @@ interface PhysicalOmniStorage : OmniStorage {
      * returns the contents of that xml file.
      */
     fun getContentOfFile(file: ChangesetFile): ByteArray
+
+    /**
+     * Save the given changeset in the physical storage location.
+     */
+    fun save(changeset: Changeset)
 }
 
 /**
@@ -88,6 +93,28 @@ interface OmniStorage {
      */
     fun removeDevice(clientId: String)
 
+    fun prepareChangeset(creator: OmniDevice, vararg elements: ChangesetElement): Changeset {
+        val id = IdGenerator.generate(changeSets.map { it.id }.toSet())
+        return Changeset(
+            LocalDateTime.now(),
+            id,
+            changeSets.last().id,
+            OmniContainer(ContentCreator.fromDevice(creator), listOf(*elements))
+        )
+    }
+
+    fun appendChangeset(changeset: Changeset) {
+        appendChangeset(changeset, false)
+    }
+
+    fun appendChangeset(changeset: Changeset, persist: Boolean)
+
+    /**
+     * Copies the data contained in this storage to another location. This is not a file-by-file copy,
+     * but instead reads the content of the old storage as well as any programmatic changes made and write those to the new location.
+     *
+     * @param location The directory the storage will be saved into. Usually this directory is called "OmniFocus.ofocus".
+     */
     fun saveTo(location: Path) {
         check(Files.exists(location)) { "Specified location does not exist" }
         check(Files.isDirectory(location)) { "Specified location is not a directory" }

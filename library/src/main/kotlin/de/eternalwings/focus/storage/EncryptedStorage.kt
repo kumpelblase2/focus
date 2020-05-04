@@ -4,6 +4,9 @@ import de.eternalwings.focus.read
 import de.eternalwings.focus.readExpecting
 import de.eternalwings.focus.storage.data.Changeset
 import de.eternalwings.focus.storage.data.ChangesetFile
+import de.eternalwings.focus.storage.encryption.*
+import de.eternalwings.focus.storage.encryption.EncryptionConstants.FILE_MAC_LENGTH
+import de.eternalwings.focus.storage.encryption.EncryptionConstants.MAGIC_BYTE_DATA
 import de.eternalwings.focus.storage.plist.ArrayObject
 import de.eternalwings.focus.storage.plist.DictionaryObject
 import de.eternalwings.focus.storage.plist.Plist
@@ -16,40 +19,6 @@ import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
-
-internal data class Slot(val type: SlotType, val index: Int, val data: ByteArray) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Slot) return false
-
-        if (type != other.type) return false
-        if (index != other.index) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = type.hashCode()
-        result = 31 * result + index
-        return result
-    }
-}
-
-enum class SlotType {
-    NONE,
-    ACTIVE_AES_WRAP,
-    RETIRED_AES_WRAP,
-    ACTIVE_AES_CTR_HMAC,
-    RETIRED_AES_CTR_HMAC,
-    PLAINTEXT_MASK,
-    RETIRED_PLAINTEXT_MASK;
-
-    companion object {
-        fun fromIndex(ordinal: Int): SlotType {
-            return values().find { it.ordinal == ordinal } ?: throw IllegalArgumentException()
-        }
-    }
-}
 
 class EncryptedStorage(location: Path, encryptionPath: Path) : NormalStorage(location),
     EncryptedOmniStorage {
@@ -72,7 +41,7 @@ class EncryptedStorage(location: Path, encryptionPath: Path) : NormalStorage(loc
 
             val slotLength = 4 * byteData[currentIndex + 1]
             val slotIdContent = byteData.copyOfRange(currentIndex + 2, currentIndex + 4)
-            val slotId = (slotIdContent[1].toInt() shl 8) or slotIdContent[0].toInt()
+            val slotId = slotIdContent.asTwoByteInt()
             val data = byteData.copyOfRange(currentIndex + 4, currentIndex + 4 + slotLength)
             secrets += Slot(type, slotId, data)
             currentIndex += 4 + slotLength
@@ -81,7 +50,7 @@ class EncryptedStorage(location: Path, encryptionPath: Path) : NormalStorage(loc
     }
 
     private fun getSlotFromInfo(info: ByteArray): Slot {
-        val keyId = info.copyOfRange(0, 2).toTwoByteInt()
+        val keyId = info.copyOfRange(0, 2).asTwoByteInt()
         return unwrappedKeys.find { it.index == keyId } ?: throw IllegalStateException()
     }
 
@@ -89,12 +58,18 @@ class EncryptedStorage(location: Path, encryptionPath: Path) : NormalStorage(loc
         val slot = getSlotFromInfo(info)
         return when (slot.type) {
             SlotType.ACTIVE_AES_CTR_HMAC, SlotType.RETIRED_AES_CTR_HMAC -> {
-                FileDecryptor(slot.data.copyOfRange(0, 16), slot.data.copyOfRange(16, 32))
+                FileDecryptor(
+                    slot.data.copyOfRange(0, 16),
+                    slot.data.copyOfRange(16, 32)
+                )
             }
             SlotType.ACTIVE_AES_WRAP, SlotType.RETIRED_AES_WRAP -> {
                 val wrappedKey = info.copyOfRange(2, info.size)
                 val unwrapped = unwrapSecretKeyFrom(wrappedKey, slot.data)
-                FileDecryptor(unwrapped.encoded.copyOfRange(0, 16), unwrapped.encoded.copyOfRange(16, 32))
+                FileDecryptor(
+                    unwrapped.encoded.copyOfRange(0, 16),
+                    unwrapped.encoded.copyOfRange(16, 32)
+                )
             }
             else -> throw IllegalStateException()
         }
@@ -117,19 +92,17 @@ class EncryptedStorage(location: Path, encryptionPath: Path) : NormalStorage(loc
 
     override fun getContentOfFile(file: Path): ZipInputStream {
         val content = RandomAccessFile(file.toFile(), "r").use {
-            val magic = MAGIC.toByteArray() + ByteArray(2) { 0 }
-            check(it.readExpecting(magic))
+            check(it.readExpecting(MAGIC_BYTE_DATA))
             val keyInfoLength = it.readUnsignedShort()
             val keyInfo = it.read(keyInfoLength)
-            val offset = magic.size + 2 + keyInfoLength
-            val paddingLength = 16 - (offset % 16)
+            val paddingLength = getPaddingAmount(keyInfoLength)
             val padding = it.read(paddingLength)
             check(padding.all { byte -> byte == 0.toByte() })
             val decryptor = getDecryptor(keyInfo)
             val segmentStart = it.filePointer.toInt()
-            it.seek(it.length() - FileDecryptor.FILE_MAC_LENGTH)
+            it.seek(it.length() - FILE_MAC_LENGTH)
             val segmentEnd = it.filePointer.toInt()
-            val fileHMAC = it.read(FileDecryptor.FILE_MAC_LENGTH)
+            val fileHMAC = it.read(FILE_MAC_LENGTH)
             decryptor.checkHMAC(it, segmentStart, segmentEnd, fileHMAC)
             decryptor.decrypt(it, segmentStart, segmentEnd)
         }
@@ -137,14 +110,20 @@ class EncryptedStorage(location: Path, encryptionPath: Path) : NormalStorage(loc
         return ZipInputStream(ByteArrayInputStream(content))
     }
 
-    private fun ByteArray.toTwoByteInt(): Int {
-        require(this.size == 2)
-        return (this[1].toInt() shl 8) or this[0].toInt()
+    override fun createChangesetFile(filename: String, output: ByteArray) {
+        check(unwrappedKeys.isNotEmpty()) { "No password was provided for encrypted store." }
+        val encryptor = FileEncryptor.fromKeySlot(unwrappedKeys.first())
+        val preamble = encryptor.createPreamble()
+        super.createChangesetFile(filename, preamble + encryptor.encrypt(output))
+    }
+
+    private fun getPaddingAmount(keyInfoLength: Int): Int {
+        val totalLengthSoFar = MAGIC_BYTE_DATA.size + 2 + keyInfoLength
+        return 16 - (totalLengthSoFar % 16)
     }
 
     companion object {
         private val secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
         private const val WRAPPER_KEY_LENGTH = 128
-        private const val MAGIC = "OmniFileEncryption"
     }
 }
