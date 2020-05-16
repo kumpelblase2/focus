@@ -31,7 +31,10 @@ tasks {
         archiveBaseName.set("focus-full")
         mergeServiceFiles()
         manifest {
-            attributes(mapOf("Main-Class" to "de.eternalwings.focus.MainKt"))
+            attributes(mapOf(
+                "Main-Class" to "de.eternalwings.focus.MainKt",
+                "Implementation-Version" to project.version
+            ))
         }
     }
 }

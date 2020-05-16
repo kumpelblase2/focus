@@ -12,4 +12,14 @@ object IdGenerator {
     fun generate(length: Int = 11): String {
         return (0 until length).map { alphabet.random() }.joinToString("")
     }
+
+    fun generate(takenIds: Set<String>, maxTries: Int = 10, length: Int = 11): String {
+        for (i in 0..maxTries) {
+            val id = generate(length)
+            if(!takenIds.contains(id))
+                return id
+        }
+
+        throw IllegalStateException("Could not generate an ID within the given amount of tries.")
+    }
 }

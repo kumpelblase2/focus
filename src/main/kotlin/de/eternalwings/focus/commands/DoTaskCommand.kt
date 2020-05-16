@@ -1,7 +1,6 @@
 package de.eternalwings.focus.commands
 
 import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import de.eternalwings.focus.ErrorCodes
 import de.eternalwings.focus.config.Configuration
@@ -9,22 +8,21 @@ import de.eternalwings.focus.failWith
 import de.eternalwings.focus.storage.OmniDevice
 import de.eternalwings.focus.storage.OmniStorage
 import de.eternalwings.focus.view.OmniFocusState
-import de.eternalwings.focus.view.OmniTask
+import java.time.ZonedDateTime
 
-class CreateTaskCommand :
-    UnlockedStorageBasedCommand(name = "create", help = "Adds a new task to a project or the inbox.") {
+class DoTaskCommand : UnlockedStorageBasedCommand(name = "do", help = "Marks a task as done") {
 
-    val text by argument("task").multiple(true)
+    val id by argument(name = "task-id", help = "The ID of the task that is done")
     val device by option("--device", "-d", help = "The device to use. Uses the configured device by default.")
 
     override fun run() {
         val storage = getUnlockedStorage()
         val view = OmniFocusState(storage, true)
-        val task = OmniTask.create(view.generateUnusedId(), text.joinToString(" ")) {
+        val task =
+            view.getTaskById(id) ?: failWith("Could not find task with id $id", ErrorCodes.GENERIC_ARGUMENT_ERROR)
 
-        }
-        view.createTask(task, getDevice(storage))
-        println(task.id)
+        val doneTask = task.copy(completed = ZonedDateTime.now())
+        view.updateTask(doneTask, getDevice(storage))
     }
 
     private fun getDevice(storage: OmniStorage): OmniDevice {

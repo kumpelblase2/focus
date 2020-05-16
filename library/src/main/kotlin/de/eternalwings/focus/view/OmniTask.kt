@@ -60,7 +60,30 @@ data class OmniTask(
         other.modified
     )
 
-    val isCompleted: Boolean
+    constructor(builder: Builder) : this(
+        builder.id,
+        builder.inbox,
+        builder.parent,
+        builder.creation,
+        builder.name,
+        builder.note,
+        builder.rank,
+        builder.dropped,
+        builder.contexts,
+        builder.deferred,
+        builder.due,
+        builder.completed,
+        builder.estimatedMinutes,
+        builder.actionOrder,
+        builder.flagged,
+        builder.completedByChildren,
+        builder.repetitionRule,
+        builder.repeat,
+        builder.repetitionMethod,
+        builder.modified
+    )
+
+    override val isCompleted: Boolean
         get() = this.completed != null || this.dropped != null
 
     override val blocked: Boolean by lazy {
@@ -96,9 +119,61 @@ data class OmniTask(
         )
     }
 
-    companion object {
-        fun create() {
+    fun toTask(previousVersion: OmniTask): Task {
+        return Task(
+            id,
+            null,
+            if(previousVersion.inbox != inbox) inbox else null,
+            if(previousVersion.parent?.id != parent?.id) parent?.let { Reference(id) } else null,
+            if(previousVersion.name != name) name else null,
+            if(previousVersion.note != note) note else null,
+            if(previousVersion.rank != rank) rank else null,
+            if(previousVersion.dropped != dropped) dropped else null,
+            null,// TODO
+            emptySet(),
+            if(previousVersion.deferred != deferred) deferred else null,
+            if(previousVersion.due != due) due else null,
+            if(previousVersion.completed != completed) completed else null,
+            if(previousVersion.estimatedMinutes != estimatedMinutes) estimatedMinutes else null,
+            creation.creationTime,
+            creation.order,
+            if(previousVersion.actionOrder != actionOrder) actionOrder else null,
+            if(previousVersion.flagged != flagged) flagged else null,
+            if(previousVersion.completedByChildren != completedByChildren) completedByChildren else null,
+            if(previousVersion.repetitionRule != repetitionRule) repetitionRule else null,
+            if(previousVersion.repeat != repeat) repeat else null,
+            if(previousVersion.repetitionMethod != repetitionMethod) repetitionMethod.toString() else null,
+            if(previousVersion.modified != modified) modified else null,
+            Operation.UPDATE
+        )
+    }
 
+    companion object {
+        fun create(id: String, name: String, setup: Builder.() -> Unit = {}): OmniTask {
+            val builder = Builder(id, name)
+            builder.setup()
+            return OmniTask(builder)
         }
+    }
+
+    class Builder(var id: String, var name: String) {
+        var inbox: Boolean = false
+        var parent: OmniTasklike? = null
+        var creation: Creation = Creation(ZonedDateTime.now(), null)
+        var note: String = ""
+        var rank: Long? = null
+        var dropped: ZonedDateTime? = null
+        var contexts: Set<OmniContext> = emptySet()
+        var deferred: ZonedDateTime? = null
+        var due: ZonedDateTime? = null
+        var completed: ZonedDateTime? = null
+        var estimatedMinutes: Long? = null
+        var actionOrder: String = "sequential"
+        var flagged: Boolean = false
+        var completedByChildren: Boolean = false
+        var repetitionRule: String? = null
+        var repeat: String? = null
+        var repetitionMethod: RepetitionMethod = RepetitionMethod.FIXED
+        var modified: ZonedDateTime? = null
     }
 }
