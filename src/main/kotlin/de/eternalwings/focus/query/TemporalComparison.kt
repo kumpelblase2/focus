@@ -1,7 +1,7 @@
 package de.eternalwings.focus.query
 
+import de.eternalwings.focus.config.Configuration
 import de.eternalwings.focus.config.Options
-import de.eternalwings.focus.config.config
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
@@ -23,7 +23,7 @@ sealed class TemporalComparison {
 
     class WeekComparison(private val week: LocalDate) : TemporalComparison() {
         override fun compareTo(date: ZonedDateTime): Boolean {
-            val firstDayOfWeek = config[Options.firstDayOfWeek]
+            val firstDayOfWeek = Configuration.instance.options.firstDayOfWeek
             val weeks = WeekFields.of(firstDayOfWeek, 1)
             val week = week.get(weeks.weekOfYear())
             return week == date.get(weeks.weekOfYear())
@@ -51,7 +51,7 @@ sealed class TemporalComparison {
 
     companion object {
         private val localeBasedDateFormatter by lazy {
-            DateTimeFormatter.ofPattern(config[Options.dateFormat])
+            DateTimeFormatter.ofPattern(Configuration.instance.options.dateFormat)
         }
 
         private val localeBasedTimeFormatter =
@@ -86,7 +86,7 @@ sealed class TemporalComparison {
 
         private fun nextDayOf(day: DayOfWeek): LocalDate {
             val today = LocalDate.now()
-            return if (config[Options.todayIsNextOfDay] && today.dayOfWeek == day) {
+            return if (Configuration.instance.options.todayIsNextOfDay && today.dayOfWeek == day) {
                 today
             } else {
                 today.with(TemporalAdjusters.next(day))

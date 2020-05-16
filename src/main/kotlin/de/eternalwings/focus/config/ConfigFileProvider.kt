@@ -6,7 +6,7 @@ import java.nio.file.Paths
 
 object ConfigFileProvider {
     fun getConfigurationFile(): Path {
-        return getConfigFolder().resolve("config.hocon")
+        return getConfigFolder().resolve("config.toml")
     }
 
     fun doesConfigurationExist(): Boolean {

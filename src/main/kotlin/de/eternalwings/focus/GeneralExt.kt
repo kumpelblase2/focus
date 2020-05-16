@@ -1,7 +1,6 @@
 package de.eternalwings.focus
 
 import de.eternalwings.focus.config.Configuration
-import de.eternalwings.focus.config.config
 import java.util.*
 import kotlin.system.exitProcess
 
@@ -15,13 +14,13 @@ fun warning(message: String) {
 }
 
 fun debug(message: String) {
-    if(config[Configuration.debug]) {
+    if(Configuration.instance.debug) {
         println("[debug] $message")
     }
 }
 
 fun debug(message: () -> String) {
-    if (config[Configuration.debug]) {
+    if (Configuration.instance.debug) {
         println("[debug] ${message()}")
     }
 }

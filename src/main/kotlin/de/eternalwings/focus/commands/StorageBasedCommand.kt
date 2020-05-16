@@ -7,7 +7,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.path
 import de.eternalwings.focus.ErrorCodes
 import de.eternalwings.focus.config.Configuration
-import de.eternalwings.focus.config.config
 import de.eternalwings.focus.failWith
 import de.eternalwings.focus.storage.EncryptedOmniStorage
 import de.eternalwings.focus.storage.OmniStorage
@@ -42,7 +41,7 @@ abstract class StorageBasedCommand(
     }
 
     private fun getStorageLocation(): Path {
-        return location ?: config[Configuration.location]?.let { Paths.get(it) } ?: failWith(
+        return location ?: Configuration.instance.location?.let { Paths.get(it) } ?: failWith(
             "No location provided. Please either set the location in the configuration or provide it after the '--location' flag.",
             ErrorCodes.NO_STORAGE_LOCATION_PROVIDED
         )
@@ -81,8 +80,8 @@ abstract class UnlockedStorageBasedCommand(
     }
 
     protected fun getPassword(): CharArray {
-        return if (config[Configuration.password] != null) {
-            config[Configuration.password]!!.toCharArray()
+        return if (Configuration.instance.password != null) {
+            Configuration.instance.password!!.toCharArray()
         } else {
             if (readPassword) {
                 readPassword()

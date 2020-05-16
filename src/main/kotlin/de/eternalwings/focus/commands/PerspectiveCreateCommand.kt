@@ -6,9 +6,6 @@ import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import com.github.h0tk3y.betterParse.parser.ErrorResult
 import de.eternalwings.focus.ErrorCodes
 import de.eternalwings.focus.config.Configuration
-import de.eternalwings.focus.config.CustomPerspective
-import de.eternalwings.focus.config.config
-import de.eternalwings.focus.config.save
 import de.eternalwings.focus.failWith
 import de.eternalwings.focus.query.QueryParser
 
@@ -18,8 +15,8 @@ class PerspectiveCreateCommand : CliktCommand(name = "create", help = "Create a 
     val query by argument(help = "Query for tasks to match to be included in this perspective.")
 
     override fun run() {
-        val existing = config[Configuration.perspectives]
-        if(existing.any { it.name == name }) {
+        val existing = Configuration.instance.perspectives
+        if(existing.containsKey(name)) {
             failWith("A perspective with such a name already exists.", ErrorCodes.GENERIC_ARGUMENT_ERROR)
         }
 
@@ -28,8 +25,8 @@ class PerspectiveCreateCommand : CliktCommand(name = "create", help = "Create a 
             failWith("The provided query does not parse.", ErrorCodes.INVALID_QUERY)
         }
 
-        config[Configuration.perspectives] = existing + CustomPerspective(name, query)
-        config.save()
+        Configuration.instance.perspectives = existing + (name to query)
+        Configuration.save()
     }
 
 }

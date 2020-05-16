@@ -6,8 +6,6 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import de.eternalwings.focus.ErrorCodes
 import de.eternalwings.focus.config.Configuration
-import de.eternalwings.focus.config.config
-import de.eternalwings.focus.config.save
 import de.eternalwings.focus.failWith
 import de.eternalwings.focus.prompt
 import de.eternalwings.focus.storage.OmniStorage
@@ -29,16 +27,16 @@ class UnregisterCommand :
             confirm || prompt("Are you sure you want to delete '${effectiveName}' (Last sync: ${device.lastSync})? [y/n] ")
         if (input) {
             storage.removeDevice(device.clientId)
-            if (config[Configuration.device] == device.clientId) {
-                config[Configuration.device] = null
-                config.save()
+            if (Configuration.instance.device == device.clientId) {
+                Configuration.instance.device = null
+                Configuration.save()
             }
         }
     }
 
     private fun getDeviceName(storage: OmniStorage): String {
         return name
-            ?: config[Configuration.device]?.let { name -> storage.devices.firstOrNull { it.name == name }?.name }
+            ?: Configuration.instance.device?.let { name -> storage.devices.firstOrNull { it.name == name }?.name }
             ?: failWith(
                 "No device provided, have you registered one? Otherwise provide the id of the device.",
                 ErrorCodes.GENERIC_ARGUMENT_ERROR
