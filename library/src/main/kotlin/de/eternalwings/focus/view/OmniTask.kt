@@ -28,6 +28,15 @@ data class OmniTask(
     override val modified: ZonedDateTime?
 ) : OmniTasklike() {
 
+    val parentProject: OmniProject?
+        get() {
+            return when (parent) {
+                is OmniProject -> parent
+                is OmniTask -> parent.parentProject
+                else -> null
+            }
+        }
+
     constructor(other: Task, resolveContext: (Reference) -> OmniContext, resolveParent: (String) -> OmniTasklike) : this(
         other.id,
         other.inbox ?: false,

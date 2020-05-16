@@ -22,6 +22,7 @@ abstract class OmniTasklike : Referencable {
     abstract val modified: ZonedDateTime?
 
     abstract val blocked: Boolean
+    abstract val isCompleted: Boolean
 
     val isStillDeferred: Boolean
         get() = (this.deferred?.isAfter(ZonedDateTime.now()) ?: false) || parent?.isStillDeferred ?: false

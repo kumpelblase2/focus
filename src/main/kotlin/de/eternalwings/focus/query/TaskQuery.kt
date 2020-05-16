@@ -103,6 +103,14 @@ sealed class TaskQueryPart {
             },
             "dropped" to { task ->
                 task.dropped != null
+            },
+            "review" to { task ->
+                val project = when(task) {
+                    is OmniProject -> task
+                    is OmniTask -> task.parentProject
+                    else -> null
+                }
+                project?.needsReview ?: false
             }
         )
 

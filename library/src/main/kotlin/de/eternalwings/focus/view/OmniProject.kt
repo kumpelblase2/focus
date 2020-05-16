@@ -54,6 +54,12 @@ data class OmniProject(
         contexts.any { it.prohibitsNextAction }
     }
 
+    override val isCompleted: Boolean
+        get() = project.status == Status.DONE || project.status == Status.DROPPED
+
+    val needsReview: Boolean
+        get() = project.nextReview?.isBefore(ZonedDateTime.now()) ?: false
+
     override fun toTask(): Task {
         return Task(
             this.id,
