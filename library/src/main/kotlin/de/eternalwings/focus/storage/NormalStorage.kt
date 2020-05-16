@@ -28,7 +28,7 @@ import kotlin.streams.toList
 
 open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
     private val fileChangesets: List<Changeset> by lazy {
-        changeSetFiles.parallelStream()
+        changeSetFiles.stream()
             .map(this::createChangesetForFile)
             .collect(Collectors.toList())
     }
