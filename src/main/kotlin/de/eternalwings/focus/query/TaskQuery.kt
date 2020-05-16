@@ -4,13 +4,12 @@ import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import com.github.h0tk3y.betterParse.parser.ErrorResult
 import com.github.h0tk3y.betterParse.parser.Parsed
 import de.eternalwings.focus.config.Configuration
-import de.eternalwings.focus.config.config
 import de.eternalwings.focus.view.OmniProject
 import de.eternalwings.focus.view.OmniTask
 import de.eternalwings.focus.view.OmniTasklike
 import java.time.ZonedDateTime
 
-typealias TaskFilter = (OmniTask) -> Boolean
+typealias TaskFilter = (OmniTasklike) -> Boolean
 
 data class TaskQuery(
     private val parts: List<TaskQueryPart>
@@ -28,7 +27,7 @@ data class TaskQuery(
         }
     }
 
-    fun eval(tasks: List<OmniTask>): List<OmniTask> {
+    fun <T : OmniTasklike> eval(tasks: List<T>): List<T> {
         return tasks.filter { queryFunction(it) }
     }
 }
@@ -63,10 +62,9 @@ sealed class TaskQueryPart {
 
     data class ShortcutPart(val name: String) : TaskQueryPart() {
         override fun asFilter(): TaskFilter {
-            val perspectives = config[Configuration.perspectives]
-            val perspective = perspectives.firstOrNull { it.name == name }
-            if (perspective != null) {
-                val query = perspective.query
+            val perspectives = Configuration.instance.perspectives
+            val query = perspectives[name]
+            if (query != null) {
                 val innerQuery = QueryParser.tryParseToEnd(query)
                 when (innerQuery) {
                     is Parsed -> {
@@ -98,12 +96,8 @@ sealed class TaskQueryPart {
             "available" to { task ->
                 !task.isCompleted && !task.blocked && !task.isStillDeferred
             },
-            "inbox" to { task ->
-                task.inbox
-            },
-            "flagged" to { task ->
-                task.flagged
-            },
+            "inbox" to { task -> task is OmniTask && task.inbox },
+            "flagged" to { task -> task.flagged },
             "due" to { task ->
                 task.due?.isBefore(ZonedDateTime.now()) ?: false
             },
@@ -112,7 +106,7 @@ sealed class TaskQueryPart {
             }
         )
 
-        val properties: Map<String, (OmniTask, String) -> Boolean> = mapOf(
+        val properties: Map<String, (OmniTasklike, String) -> Boolean> = mapOf(
             "name" to { task, value -> task.name == value },
             "note" to { task, value -> task.note.contains(value, true) },
             "due" to { task, value ->
