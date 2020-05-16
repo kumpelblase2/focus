@@ -1,6 +1,7 @@
 package de.eternalwings.focus.storage
 
 import de.eternalwings.focus.storage.data.Changeset
+import java.time.OffsetDateTime
 
 class InMemoryStorage(
     devices: Collection<OmniDevice> = emptyList(),
@@ -16,8 +17,24 @@ class InMemoryStorage(
     override var changeSets: List<Changeset> = changeSets
         private set
 
-    override fun registerDevice(device: OmniDevice) {
-        devices += device
+    private val lastChangesetId: String
+        get() = changeSets.asSequence().maxBy { it.timestamp }!!.id
+
+    override fun updateDevice(device: OmniDevice, refreshLastSync: Boolean) {
+        val updatedDevice = if(refreshLastSync) {
+            device.copy(lastSync = OffsetDateTime.now(), tailIds = listOf(lastChangesetId))
+        } else {
+            device
+        }
+
+        devices += updatedDevice
+
+        if(devices.size > 3) {
+            val changesetsForDevice = devices.filter { it.clientId == updatedDevice.clientId }
+            val sorted = changesetsForDevice.sortedByDescending { it.lastSync }
+            val oldestKept = sorted.take(3).last()
+            devices = devices.filter { it.clientId != updatedDevice.clientId || it.lastSync > oldestKept.lastSync }
+        }
     }
 
     override fun removeDevice(clientId: String) {

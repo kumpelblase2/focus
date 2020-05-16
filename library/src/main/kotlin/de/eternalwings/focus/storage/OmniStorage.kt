@@ -4,6 +4,7 @@ import de.eternalwings.focus.storage.data.*
 import de.eternalwings.focus.storage.plist.Plist
 import org.jdom2.output.Format
 import org.jdom2.output.XMLOutputter
+import java.lang.IllegalArgumentException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
@@ -85,14 +86,49 @@ interface OmniStorage {
     /**
      * Registers a new device in this storage which can then be used to track
      * synchronization progress as well as author changesets.
+     *
+     * @throws IllegalArgumentException if a device with the same ID already exists in the store.
+     *  To update a device use [updateDevice] instead
      */
-    fun registerDevice(device: OmniDevice)
+    fun registerDevice(device: OmniDevice) {
+        if (devices.any { it.clientId == device.clientId }) {
+            throw IllegalArgumentException("A device with the given ID already exists. Did you mean to update it?")
+        }
+
+        val tailIds = changeSets.asSequence().sortedByDescending { it.timestamp }.first()
+        this.updateDevice(device.copy(tailIds = listOf(tailIds.id)))
+    }
 
     /**
-     * Removes a device from the store.
+     * Removes a device from the store, including all it's versions.
      */
     fun removeDevice(clientId: String)
 
+    /**
+     * Saves an update version of the given device pointing to the most recent changesets.
+     * This implicitly sets the [OmniDevice.lastSync] & [OmniDevice.tailIds] to the most
+     * recent values (now & last changeset id respectively). If you want to manually control
+     * these values, use the overloaded variant of this method.
+     */
+    fun updateDevice(device: OmniDevice) {
+        this.updateDevice(device, true)
+    }
+
+    /**
+     * Saves the given device to the store. If more than three device versions of the same device
+     * are present, a cleanup will be performed to keep only the freshest three versions of this
+     * given device.
+     *
+     * @param device The device to be saved
+     * @param refreshLastSync If the [lastSync][OmniDevice.lastSync] & [tailIds][OmniDevice.tailIds] properties should be
+     *   updated as well before saving.
+     */
+    fun updateDevice(device: OmniDevice, refreshLastSync: Boolean)
+
+    /**
+     * Creates a changeset with the given content. This does _not_ persist the changeset in the
+     * store yet; use [appendChangeset] for that.
+     */
     fun prepareChangeset(creator: OmniDevice, vararg elements: ChangesetElement): Changeset {
         val id = IdGenerator.generate(changeSets.map { it.id }.toSet())
         return Changeset(
@@ -103,6 +139,11 @@ interface OmniStorage {
         )
     }
 
+    /**
+     * Queues a changeset to be stored, but will not be persisted to disk yet. If you want to
+     * directly store this changeset, use the overloaded variant of this method to control this
+     * persisting.
+     */
     fun appendChangeset(changeset: Changeset) {
         appendChangeset(changeset, false)
     }

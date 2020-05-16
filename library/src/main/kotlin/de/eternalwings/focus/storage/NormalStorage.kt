@@ -18,7 +18,7 @@ import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
-import java.time.ZonedDateTime
+import java.time.OffsetDateTime
 import java.util.stream.Collectors
 import java.util.stream.Stream
 import java.util.zip.ZipEntry
@@ -38,20 +38,42 @@ open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
 
     private var transientChangesets: List<Changeset> = emptyList()
 
-    override fun registerDevice(device: OmniDevice) {
-        val deviceId = device.clientId
-        val date = ZonedDateTime.now()
-        val dateString = date.format(CLIENT_FILE_DATE_FORMAT)
-        val path = location.resolve("$dateString=$deviceId.client")
-        val lastChangeset = changeSetFiles.last()
-        Plist.writePlist(device.copy(tailIds = listOf(lastChangeset.id)).toPlist(), path)
-    }
+    private val OmniDevice.file: Path
+        get() = location.resolve(fileName)
+
+    private val OmniDevice.fileName: String
+        get() {
+            return CLIENT_FILE_DATE_FORMAT.format(this.lastSync) + "=" + this.clientId + CLIENT_FILE_NAME
+        }
+
+    private val lastChangesetId: String
+        get() = changeSetFiles.asSequence().maxBy { it.timestamp }!!.id
 
     override fun removeDevice(clientId: String) {
         val deviceEntries = devices.filter { it.clientId == clientId }
-        deviceEntries.forEach { device ->
-            val filename = CLIENT_FILE_DATE_FORMAT.format(device.lastSync) + "=" + device.clientId + CLIENT_FILE_NAME
-            Files.delete(location.resolve(filename))
+        deviceEntries.forEach { removeDeviceChangeset(it) }
+    }
+
+    private fun removeDeviceChangeset(device: OmniDevice) {
+        Files.delete(device.file)
+    }
+
+    override fun updateDevice(device: OmniDevice, refreshLastSync: Boolean) {
+        val updatedDevice = if (refreshLastSync) {
+            device.copy(tailIds = listOf(lastChangesetId), lastSync = OffsetDateTime.now())
+        } else {
+            device
+        }
+        val deviceId = updatedDevice.clientId
+        Plist.writePlist(updatedDevice.toPlist(), updatedDevice.file)
+
+        val deviceChangesets = devices.filter { it.clientId == deviceId }
+        if (deviceChangesets.count() > 3) {
+            // Only persist the most recent 3 changesets
+            val sorted = deviceChangesets.sortedByDescending { it.lastSync }
+            for (i in 3 until sorted.size) {
+                removeDeviceChangeset(sorted[i])
+            }
         }
     }
 
