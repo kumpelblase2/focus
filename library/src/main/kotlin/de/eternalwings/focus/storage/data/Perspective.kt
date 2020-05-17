@@ -46,11 +46,13 @@ data class Perspective(
             val added = addedElement?.value?.date()
             val addedOrder = addedElement.getAttribute("order")?.longValue
             val plistContent = Plist.parsePlistElement(element.child("plist")!!.children.first())
+            val operation = element.attr("op")?.toOperation() ?: Operation.CREATE
             return Perspective(
                 id,
                 added,
                 addedOrder,
-                plistContent
+                plistContent,
+                operation
             )
         }
     }
