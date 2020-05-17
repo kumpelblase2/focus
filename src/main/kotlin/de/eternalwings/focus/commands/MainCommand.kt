@@ -22,7 +22,8 @@ class MainCommand() : NoOpCliktCommand(
             PerspectiveCommand(),
             StorageCommand(),
             TaskCommand(),
-            VersionCommand()
+            VersionCommand(),
+            LocateElementCommand()
         )
     }
 }
