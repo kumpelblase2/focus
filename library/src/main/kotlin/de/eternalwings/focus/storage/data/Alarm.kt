@@ -61,16 +61,16 @@ data class Alarm(
 
         fun fromXML(element: Element): Alarm {
             val operation = element.attr("op")?.toOperation() ?: Operation.CREATE
-
             val id = element.getAttribute("id").value
-            val addedElement = element.child("added")
+            val container = if(operation == Operation.REFERENCE) element.child("reference-snapshot")!! else element
+            val addedElement = container.child("added")
             val added = addedElement?.value?.date()
             val addedOrder = addedElement?.attr("order")?.toLong()
-            val task = element.reference("task")
-            val kind = element.text("kind")
-            val variant = element.text("variant")?.ifEmpty { null }
-            val fireDate = element.text("fire-date")?.date()
-            val repeatInterval = element.long("repeat-interval") ?: 0
+            val task = container.reference("task")
+            val kind = container.text("kind")
+            val variant = container.text("variant")?.ifEmpty { null }
+            val fireDate = container.text("fire-date")?.date()
+            val repeatInterval = container.long("repeat-interval") ?: 0
             return Alarm(id, added, addedOrder, task, kind, variant, fireDate, repeatInterval).also { it.operation = operation }
         }
     }

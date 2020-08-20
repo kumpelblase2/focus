@@ -57,20 +57,21 @@ data class Context(
         const val TAG_NAME = "context"
 
         fun fromXML(element: Element): Context {
+            val operation = element.attr("op")?.toOperation() ?: Operation.CREATE
             val id = element.attr("id")!!
-            val parent = element.reference("context")
-            val addedElement = element.child("added")
+            val container = if (operation == Operation.REFERENCE) element.child("reference-snapshot")!! else element
+            val parent = container.reference("context")
+            val addedElement = container.child("added")
             val added = addedElement?.value?.date()
             val addedOrder = addedElement?.attr("order")?.toLong()
-            val name = element.text("name")
-            val note = element.htmlText("note")
-            val rank = element.long("rank")
-            val hidden = element.boolean("hidden")
-            val prohibitsNextAction = element.boolean("prohibits-next-action")
-            val location = element.child("location")?.toLocation()
-            val modified = element.date("modified")
-            val tasksUserOrdered = element.boolean("tasks-user-ordered")
-            val operation = element.attr("op")?.toOperation() ?: Operation.CREATE
+            val name = container.text("name")
+            val note = container.htmlText("note")
+            val rank = container.long("rank")
+            val hidden = container.boolean("hidden")
+            val prohibitsNextAction = container.boolean("prohibits-next-action")
+            val location = container.child("location")?.toLocation()
+            val modified = container.date("modified")
+            val tasksUserOrdered = container.boolean("tasks-user-ordered")
             return Context(
                 id,
                 parent,

@@ -13,23 +13,30 @@ abstract class BaseChangesetElement : ChangesetElement {
     override fun toXML(): Element {
         return Element(tagName, XmlConstants.NAMESPACE).also {
             it.setAttribute("id", id)
-            if (this is WithOperation && operation != Operation.CREATE) {
+            val operation = if(this is WithOperation) this.operation else Operation.CREATE
+            if (operation != Operation.CREATE) {
                 it.setAttribute("op", operation.name.toLowerCase())
             }
+
+            val container = if(operation == Operation.REFERENCE) {
+                val inner = Element("snapshot-reference", XmlConstants.NAMESPACE)
+                it.addContent(inner)
+                inner
+            } else it
 
             if(this is WithCreationTimestamp) {
                 val added = added
                 check(added != null) { "A ${javaClass.simpleName} changeset entry always has an added date." }
                 val elem = dateElement("added", added)
                 order?.let { elem.setAttribute("order", order.toString()) }
-                it.addContent(elem)
+                container.addContent(elem)
             }
 
-            fillXmlElement(it)
-
-            if(this is WithModificationTimestamp) {
-                modified?.let { modified -> it.addContent(dateElement("modified", modified)) }
+            if (this is WithModificationTimestamp) {
+                modified?.let { modified -> container.addContent(dateElement("modified", modified)) }
             }
+
+            fillXmlElement(container)
         }
     }
 }

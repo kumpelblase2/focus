@@ -31,12 +31,13 @@ data class TaskToTag(
         fun fromXML(element: Element): TaskToTag {
             val operation = element.attr("op")?.toOperation() ?: Operation.CREATE
             val id = element.attr("id")!!
-            val added = element.date("added")
-            val order = element.child("added")?.attr("order")?.toLong()
-            val task = element.reference("task")
-            val context = element.reference("context")
-            val rankInTask = element.text("rank-in-task")
-            val rankInTag = element.text("rank-in-tag")
+            val container = if (operation == Operation.REFERENCE) element.child("reference-snapshot")!! else element
+            val added = container.date("added")
+            val order = container.child("added")?.attr("order")?.toLong()
+            val task = container.reference("task")
+            val context = container.reference("context")
+            val rankInTask = container.text("rank-in-task")
+            val rankInTag = container.text("rank-in-tag")
 
             return TaskToTag(
                 id,

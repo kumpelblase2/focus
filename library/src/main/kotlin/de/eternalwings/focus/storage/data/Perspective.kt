@@ -41,12 +41,13 @@ data class Perspective(
         const val TAG_NAME = "perspective"
 
         fun fromXML(element: Element): Perspective {
+            val operation = element.attr("op")?.toOperation() ?: Operation.CREATE
             val id = element.attr("id")!!
-            val addedElement = element.getChild("added", NAMESPACE)
+            val container = if (operation == Operation.REFERENCE) element.child("reference-snapshot")!! else element
+            val addedElement = container.getChild("added", NAMESPACE)
             val added = addedElement?.value?.date()
             val addedOrder = addedElement.getAttribute("order")?.longValue
-            val plistContent = Plist.parsePlistElement(element.child("plist")!!.children.first())
-            val operation = element.attr("op")?.toOperation() ?: Operation.CREATE
+            val plistContent = Plist.parsePlistElement(container.child("plist")!!.children.first())
             return Perspective(
                 id,
                 added,

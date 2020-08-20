@@ -50,14 +50,15 @@ data class Folder(
         fun fromXML(element: Element): Folder {
             val operation = element.attr("op")?.toOperation() ?: Operation.CREATE
             val id = element.attr("id")!!
-            val parent = element.reference("folder")
-            val added = element.date("added")
-            val order = element.child("added")?.attr("order")?.toLong()
-            val name = element.text("name")
-            val note = element.htmlText("note")
-            val rank = element.long("rank")
-            val hidden = element.boolean("hidden")
-            val modified = element.date("modified")
+            val container = if (operation == Operation.REFERENCE) element.child("reference-snapshot")!! else element
+            val parent = container.reference("folder")
+            val added = container.date("added")
+            val order = container.child("added")?.attr("order")?.toLong()
+            val name = container.text("name")
+            val note = container.htmlText("note")
+            val rank = container.long("rank")
+            val hidden = container.boolean("hidden")
+            val modified = container.date("modified")
             return Folder(id, parent, added, order, name, note, rank, hidden, modified).also { it.operation = operation }
         }
     }

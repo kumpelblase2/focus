@@ -8,6 +8,14 @@ import de.eternalwings.focus.storage.OmniStorage
 import de.eternalwings.focus.storage.data.*
 import java.util.*
 
+internal fun changeSetContentOrder(element: ChangesetElement): Int {
+    return when (element) {
+        is Setting -> 1
+        is WithOperation -> if (element.operation == Operation.REFERENCE) 2 else 10
+        else -> 10
+    }
+}
+
 class OmniFocusState(private val storage: OmniStorage, val autoPersists: Boolean = false) {
     private var contextById: Map<String, OmniContext> = emptyMap()
     private var tasksById: Map<String, OmniTasklike> = emptyMap()
@@ -30,7 +38,7 @@ class OmniFocusState(private val storage: OmniStorage, val autoPersists: Boolean
         val mergedFolders = mutableMapOf<String, Folder>()
 
         storage.changeSets.forEach { changeset ->
-            changeset.container.content.forEach { item ->
+            changeset.container.content.asSequence().sortedBy(::changeSetContentOrder).forEach { item ->
                 when (item) {
                     is Context -> applyToMap(mergedContexts, item)
                     is Folder -> applyToMap(mergedFolders, item)
@@ -96,7 +104,7 @@ class OmniFocusState(private val storage: OmniStorage, val autoPersists: Boolean
     fun createTask(task: OmniTask, creator: OmniDevice) {
         tasksById = tasksById + (task.id to task)
         storage.appendChangeset(storage.prepareChangeset(creator, task.toTask()), autoPersists)
-        if(autoPersists) {
+        if (autoPersists) {
             storage.updateDevice(creator)
         }
     }
@@ -198,12 +206,20 @@ class OmniFocusState(private val storage: OmniStorage, val autoPersists: Boolean
             Operation.DELETE -> map.remove(item.id)
             Operation.CREATE -> map[item.id] = item
             Operation.UPDATE -> {
-                val existing = map[item.id] ?: TODO()
+                val existing = map[item.id]
+                    ?: error("Trying to update an element that is not yet in the store. Item ID: ${item.id}")
                 map[item.id] = existing.mergeFrom(item)
             }
             Operation.REFERENCE -> {
-            } // technically we should handle this, but for now it's irrelevant
-            else -> throw NotImplementedError("Operation ${item.operation} not implemented for ${item::class.java}.")
+                val existing = map[item.id]
+                if (existing == null) {
+                    map[item.id] = item
+                } else {
+                    if (existing != item) {
+                        System.err.println("Reference for item with ID ${item.id} does not match the current state.")
+                    }
+                }
+            }
         }
     }
 

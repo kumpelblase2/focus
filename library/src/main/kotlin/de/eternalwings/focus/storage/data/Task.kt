@@ -99,29 +99,30 @@ data class Task(
 
         fun fromXML(element: Element): Task {
             val operation = element.attr("op")?.toOperation() ?: Operation.CREATE
-
             val id = element.attr("id")!!
-            val inbox = element.boolean("inbox")
-            val project = element.child(Project.TAG_NAME)?.asProject()
-            val addedElement = element.child("added")
+            val container = if (operation == Operation.REFERENCE) element.child("reference-snapshot")!! else element
+
+            val inbox = container.boolean("inbox")
+            val project = container.child(Project.TAG_NAME)?.asProject()
+            val addedElement = container.child("added")
             val added = addedElement?.value?.date()
             val addedOrder = addedElement?.attr("order")?.toLong()
-            val parent = element.reference("task")
-            val name = element.text("name")
-            val note = element.htmlText("note")
-            val rank = element.long("rank")
-            val contextReference = element.reference("context")
-            val start = element.date("start")
-            val actionOrder = element.text("order")
-            val hidden = element.date("hidden")
-            val due = element.date("due")
-            val completed = element.date("completed")
-            val flagged = element.boolean("flagged")
-            val completedByChildren = element.boolean("completed-by-children")
-            val repetitionRule = element.text("repetition-rule")
-            val repetitionMethod = element.text("repetition-method")
-            val repeat = element.text("repeat")
-            val modified = element.date("modified")
+            val parent = container.reference("task")
+            val name = container.text("name")
+            val note = container.htmlText("note")
+            val rank = container.long("rank")
+            val contextReference = container.reference("context")
+            val start = container.date("start")
+            val actionOrder = container.text("order")
+            val hidden = container.date("hidden")
+            val due = container.date("due")
+            val completed = container.date("completed")
+            val flagged = container.boolean("flagged")
+            val completedByChildren = container.boolean("completed-by-children")
+            val repetitionRule = container.text("repetition-rule")
+            val repetitionMethod = container.text("repetition-method")
+            val repeat = container.text("repeat")
+            val modified = container.date("modified")
             return Task(
                 id,
                 project,
