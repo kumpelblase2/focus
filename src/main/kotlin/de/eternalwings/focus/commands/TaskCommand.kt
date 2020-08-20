@@ -7,6 +7,6 @@ class TaskCommand :
     NoOpCliktCommand(name = "tasks", help = "Subcommands for interacting with tasks inside the storage.") {
 
     init {
-        subcommands(CreateTaskCommand(), DoTaskCommand())
+        subcommands(CreateTaskCommand(), DoTaskCommand(), DeferTaskCommand(), CancelTaskCommand())
     }
 }
