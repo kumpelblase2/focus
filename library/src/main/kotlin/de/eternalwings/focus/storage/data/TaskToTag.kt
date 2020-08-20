@@ -12,11 +12,11 @@ data class TaskToTag(
     val task: Reference?,
     val context: Reference?,
     val rankInTask: String?, // is a hex though
-    val rankInTag: String?,
-    override val operation: Operation = Operation.CREATE
+    val rankInTag: String?
 ) : BaseChangesetElement(), WithOperation, WithCreationTimestamp {
 
     override val tagName = TAG_NAME
+    override var operation: Operation = Operation.CREATE
 
     override fun fillXmlElement(element: Element) {
         task?.let { element.addContent(referenceElement("task", it)) }
@@ -45,9 +45,8 @@ data class TaskToTag(
                 task,
                 context,
                 rankInTask,
-                rankInTag,
-                operation
-            )
+                rankInTag
+            ).also { it.operation = operation }
         }
     }
 }

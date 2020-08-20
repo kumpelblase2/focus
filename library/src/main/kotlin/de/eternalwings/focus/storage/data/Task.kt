@@ -29,8 +29,7 @@ data class Task(
     val repetitionRule: String?,
     val repeat: String?,
     val repetitionMethod: String?, // TODO can be an enum
-    override val modified: ZonedDateTime?,
-    override val operation: Operation = Operation.CREATE
+    override val modified: ZonedDateTime?
 ) : BaseChangesetElement(), WithOperation, WithCreationTimestamp, WithModificationTimestamp, WithRank,
     Mergeable<Task> {
 
@@ -38,6 +37,7 @@ data class Task(
         get() = if (context == null) emptySet() else setOf(context) + additionalContexts
 
     override val tagName = TAG_NAME
+    override var operation: Operation = Operation.CREATE
 
     override fun mergeFrom(other: Task): Task {
         return Task(
@@ -145,9 +145,8 @@ data class Task(
                 repetitionRule,
                 repeat,
                 repetitionMethod,
-                modified,
-                operation
-            )
+                modified
+            ).also { it.operation = operation }
         }
 
         private fun Element.asProject(): Project? {

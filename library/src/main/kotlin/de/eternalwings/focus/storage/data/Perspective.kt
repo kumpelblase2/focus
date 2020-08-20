@@ -13,13 +13,13 @@ data class Perspective(
     override val id: String,
     override val added: ZonedDateTime?,
     override val order: Long?,
-    val content: PlistObject<*>?,
-    override val operation: Operation = Operation.CREATE
+    val content: PlistObject<*>?
     // TODO missing icon attachment
 ) : BaseChangesetElement(), WithCreationTimestamp, WithOperation,
     Mergeable<Perspective> {
 
     override val tagName = TAG_NAME
+    override var operation: Operation = Operation.CREATE
 
     override fun mergeFrom(other: Perspective): Perspective {
         return Perspective(
@@ -51,9 +51,8 @@ data class Perspective(
                 id,
                 added,
                 addedOrder,
-                plistContent,
-                operation
-            )
+                plistContent
+            ).also { it.operation = operation }
         }
     }
 }

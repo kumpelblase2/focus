@@ -114,8 +114,7 @@ data class OmniTask(
             this.repetitionRule,
             this.repeat,
             this.repetitionMethod.name,
-            this.modified,
-            Operation.CREATE
+            this.modified
         )
     }
 
@@ -143,9 +142,8 @@ data class OmniTask(
             if(previousVersion.repetitionRule != repetitionRule) repetitionRule else null,
             if(previousVersion.repeat != repeat) repeat else null,
             if(previousVersion.repetitionMethod != repetitionMethod) repetitionMethod.toString() else null,
-            if(previousVersion.modified != modified) modified else null,
-            Operation.UPDATE
-        )
+            if(previousVersion.modified != modified) modified else null
+        ).apply { operation = Operation.UPDATE }
     }
 
     companion object {

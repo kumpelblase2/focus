@@ -17,10 +17,11 @@ data class Alarm(
     val kind: String?,
     val variant: String?,
     val fireAt: ZonedDateTime?,
-    val repeatInterval: Long?,
-    override val operation: Operation = Operation.CREATE
+    val repeatInterval: Long?
 ) : ChangesetElement, WithOperation, WithCreationTimestamp,
     Mergeable<Alarm> {
+
+    override var operation: Operation = Operation.CREATE
 
     override fun mergeFrom(other: Alarm): Alarm {
         return Alarm(
@@ -70,7 +71,7 @@ data class Alarm(
             val variant = element.text("variant")?.ifEmpty { null }
             val fireDate = element.text("fire-date")?.date()
             val repeatInterval = element.long("repeat-interval") ?: 0
-            return Alarm(id, added, addedOrder, task, kind, variant, fireDate, repeatInterval, operation)
+            return Alarm(id, added, addedOrder, task, kind, variant, fireDate, repeatInterval).also { it.operation = operation }
         }
     }
 }

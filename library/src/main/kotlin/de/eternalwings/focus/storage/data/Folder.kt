@@ -15,12 +15,12 @@ data class Folder(
     val note: String?,
     override val rank: Long?,
     override val hidden: Boolean?,
-    override val modified: ZonedDateTime?,
-    override val operation: Operation = Operation.CREATE
+    override val modified: ZonedDateTime?
 ) : BaseChangesetElement(), WithOperation, WithCreationTimestamp, WithModificationTimestamp, WithRank, CanHide,
     Mergeable<Folder> {
 
     override val tagName = TAG_NAME
+    override var operation: Operation = Operation.CREATE
 
     override fun mergeFrom(other: Folder): Folder {
         return Folder(
@@ -58,7 +58,7 @@ data class Folder(
             val rank = element.long("rank")
             val hidden = element.boolean("hidden")
             val modified = element.date("modified")
-            return Folder(id, parent, added, order, name, note, rank, hidden, modified, operation)
+            return Folder(id, parent, added, order, name, note, rank, hidden, modified).also { it.operation = operation }
         }
     }
 }

@@ -18,12 +18,12 @@ data class Context(
     val prohibitsNextAction: Boolean?,
     val location: Location?,
     override val modified: ZonedDateTime?,
-    val tasksUserOrdered: Boolean?,
-    override val operation: Operation = Operation.CREATE
+    val tasksUserOrdered: Boolean?
 ) : BaseChangesetElement(), WithCreationTimestamp, WithModificationTimestamp, WithRank, CanHide, WithOperation,
     Mergeable<Context> {
 
     override val tagName = TAG_NAME
+    override var operation: Operation = Operation.CREATE
 
     override fun mergeFrom(other: Context): Context {
         return Context(
@@ -83,9 +83,8 @@ data class Context(
                 prohibitsNextAction,
                 location,
                 modified,
-                tasksUserOrdered,
-                operation
-            )
+                tasksUserOrdered
+            ).also { it.operation = operation }
         }
 
         private fun Element.toLocation(): Location? {

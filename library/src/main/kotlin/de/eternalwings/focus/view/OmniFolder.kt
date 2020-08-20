@@ -38,8 +38,7 @@ data class OmniFolder(
             note,
             rank,
             hidden,
-            modified,
-            Operation.CREATE
+            modified
         )
     }
 
@@ -53,9 +52,8 @@ data class OmniFolder(
             if (note != olderVersion.note) note else null,
             if (rank != olderVersion.rank) rank else null,
             if (hidden != olderVersion.hidden) hidden else null,
-            if (modified != olderVersion.modified) modified else null,
-            Operation.UPDATE
-        )
+            if (modified != olderVersion.modified) modified else null
+        ).apply { operation = Operation.UPDATE }
     }
 
     fun diffForReference(myReference: Referencable?, reference: Referencable?): Reference? {
