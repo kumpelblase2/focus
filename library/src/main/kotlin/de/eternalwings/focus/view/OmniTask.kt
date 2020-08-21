@@ -90,6 +90,9 @@ data class OmniTask(
         contexts.any { it.prohibitsNextAction } || parent?.blocked ?: false
     }
 
+    override val isAvailable: Boolean
+        get() = super.isAvailable && (parent?.isAvailable ?: true)
+
     override fun toTask(): Task {
         return Task(
             this.id,

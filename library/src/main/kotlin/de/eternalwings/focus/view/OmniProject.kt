@@ -57,6 +57,9 @@ data class OmniProject(
     override val isCompleted: Boolean
         get() = project.status == ProjectStatus.DONE || project.status == ProjectStatus.DROPPED
 
+    override val isAvailable: Boolean
+        get() = super.isAvailable && project.status != ProjectStatus.INACTIVE
+
     val needsReview: Boolean
         get() = project.nextReview?.isBefore(ZonedDateTime.now()) ?: false
 

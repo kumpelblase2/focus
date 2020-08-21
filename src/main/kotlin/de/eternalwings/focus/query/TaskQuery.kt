@@ -93,9 +93,7 @@ sealed class TaskQueryPart {
 
     companion object {
         val shortcuts: Map<String, TaskFilter> = mapOf(
-            "available" to { task ->
-                !task.isCompleted && !task.blocked && !task.isStillDeferred
-            },
+            "available" to { task -> task.isAvailable },
             "inbox" to { task -> task is OmniTask && task.inbox },
             "flagged" to { task -> task.flagged },
             "due" to { task ->
