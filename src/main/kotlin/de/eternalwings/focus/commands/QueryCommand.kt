@@ -8,6 +8,7 @@ import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import com.github.h0tk3y.betterParse.parser.ErrorResult
 import com.github.h0tk3y.betterParse.parser.Parsed
 import de.eternalwings.focus.ErrorCodes
+import de.eternalwings.focus.config.Configuration
 import de.eternalwings.focus.failWith
 import de.eternalwings.focus.presentation.TaskListPrinter
 import de.eternalwings.focus.query.QueryParser
@@ -47,6 +48,12 @@ class QueryCommand : UnlockedStorageBasedCommand(name = "query", help = "Query t
 
         if (total) {
             println("Total: ${result.size}/${taskInstances.size} Tasks.")
+        }
+
+        if(Configuration.instance.options.updateLastIds) {
+            val deviceId = Configuration.instance.device ?: return
+            val device = storage.findDeviceById(deviceId) ?: return
+            storage.updateDevice(device)
         }
     }
 }

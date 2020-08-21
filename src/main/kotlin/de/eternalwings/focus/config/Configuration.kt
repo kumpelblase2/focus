@@ -12,6 +12,7 @@ class Options {
     var firstDayOfWeek: DayOfWeek = DayOfWeek.MONDAY
     var dateFormat: String =
         (DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault()) as SimpleDateFormat).toPattern()
+    var updateLastIds: Boolean = true
 }
 
 class Configuration {

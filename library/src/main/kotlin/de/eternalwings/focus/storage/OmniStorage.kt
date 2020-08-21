@@ -4,7 +4,6 @@ import de.eternalwings.focus.storage.data.*
 import de.eternalwings.focus.storage.plist.Plist
 import org.jdom2.output.Format
 import org.jdom2.output.XMLOutputter
-import java.lang.IllegalArgumentException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
@@ -188,6 +187,14 @@ interface OmniStorage {
                 it.closeEntry()
             }
         }
+    }
+
+    fun findDeviceById(id: String): OmniDevice? {
+        return uniqueDevices.find { it.clientId == id }
+    }
+
+    fun findDeviceByName(name: String): OmniDevice? {
+        return uniqueDevices.find { it.name == name }
     }
 
     companion object {
