@@ -12,7 +12,7 @@ data class Project(
     val lastReview: ZonedDateTime?,
     val nextReview: ZonedDateTime?,
     val reviewInterval: String?,
-    val status: String?
+    val status: ProjectStatus?
 ) : Mergeable<Project> {
 
     override fun mergeFrom(other: Project): Project {
@@ -22,7 +22,7 @@ data class Project(
             other.lastReview ?: lastReview,
             other.nextReview ?: nextReview,
             other.reviewInterval ?: reviewInterval,
-            status ?: status
+            other.status ?: status
         )
     }
 
@@ -33,7 +33,7 @@ data class Project(
             lastReview?.let { lastReview -> it.addContent(dateElement("last-review", lastReview)) }
             nextReview?.let { nextReview -> it.addContent(dateElement("next-review", nextReview)) }
             reviewInterval?.let { reviewInterval -> it.addContent(textElement("review-interval", reviewInterval)) }
-            status?.let { status -> it.addContent(textElement("status", status)) }
+            status?.let { status -> it.addContent(textElement("status", status.name)) }
         }
     }
 
@@ -46,7 +46,7 @@ data class Project(
             val lastReview = element.date("last-review")
             val nextReview = element.date("next-review")
             val reviewInterval = element.text("review-interval")
-            val status = element.text("status")
+            val status = element.text("status")?.let { ProjectStatus.fromValue(it) }
             return Project(parentFolder, singleton, lastReview, nextReview, reviewInterval, status)
         }
     }

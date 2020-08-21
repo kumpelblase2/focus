@@ -2,6 +2,7 @@ package de.eternalwings.focus.view
 
 import de.eternalwings.focus.Reference
 import de.eternalwings.focus.storage.data.Project
+import de.eternalwings.focus.storage.data.ProjectStatus
 import java.time.ZonedDateTime
 
 data class ProjectDefinition(
@@ -10,7 +11,7 @@ data class ProjectDefinition(
     val lastReview: ZonedDateTime?,
     val nextReview: ZonedDateTime?,
     val reviewInterval: RelativeDuration?,
-    val status: Status
+    val status: ProjectStatus
 ) {
     constructor(project: Project, folderResolver: (String) -> OmniFolder) : this(
         project.folder?.id?.let(folderResolver),
@@ -18,7 +19,7 @@ data class ProjectDefinition(
         project.lastReview,
         project.nextReview,
         project.reviewInterval?.parseDuration(),
-        project.status?.let { Status.valueOf(it.toUpperCase()) } ?: Status.ACTIVE
+        project.status ?: ProjectStatus.ACTIVE
     )
 
     fun toProject(): Project {
@@ -28,7 +29,7 @@ data class ProjectDefinition(
             this.lastReview,
             this.nextReview,
             this.reviewInterval.toString(),
-            this.status.name
+            this.status
         )
     }
 }

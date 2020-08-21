@@ -1,8 +1,8 @@
 package de.eternalwings.focus.view
 
 import de.eternalwings.focus.Reference
-import de.eternalwings.focus.storage.data.Operation
 import de.eternalwings.focus.storage.data.Task
+import de.eternalwings.focus.storage.data.ProjectStatus
 import java.time.ZonedDateTime
 
 data class OmniProject(
@@ -55,7 +55,7 @@ data class OmniProject(
     }
 
     override val isCompleted: Boolean
-        get() = project.status == Status.DONE || project.status == Status.DROPPED
+        get() = project.status == ProjectStatus.DONE || project.status == ProjectStatus.DROPPED
 
     val needsReview: Boolean
         get() = project.nextReview?.isBefore(ZonedDateTime.now()) ?: false
