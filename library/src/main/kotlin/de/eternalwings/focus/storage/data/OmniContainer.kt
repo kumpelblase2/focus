@@ -7,6 +7,12 @@ package de.eternalwings.focus.storage.data
  * contents, so the changes, of the changeset.
  */
 data class OmniContainer(
+    /**
+     * The creator who made the changeset these changes belong to
+     */
     val creator: ContentCreator,
+    /**
+     * The changes of the changeset
+     */
     val content: List<ChangesetElement>
 )

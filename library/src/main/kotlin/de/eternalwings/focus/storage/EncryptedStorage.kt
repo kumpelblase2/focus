@@ -5,7 +5,9 @@ import de.eternalwings.focus.readExpecting
 import de.eternalwings.focus.storage.data.Changeset
 import de.eternalwings.focus.storage.data.ChangesetFile
 import de.eternalwings.focus.storage.encryption.*
+import de.eternalwings.focus.storage.encryption.EncryptionConstants.AES_KEY_SIZE
 import de.eternalwings.focus.storage.encryption.EncryptionConstants.FILE_MAC_LENGTH
+import de.eternalwings.focus.storage.encryption.EncryptionConstants.HMAC_KEY_SIZE
 import de.eternalwings.focus.storage.encryption.EncryptionConstants.MAGIC_BYTE_DATA
 import de.eternalwings.focus.storage.plist.ArrayObject
 import de.eternalwings.focus.storage.plist.DictionaryObject
@@ -59,16 +61,16 @@ class EncryptedStorage(location: Path, encryptionPath: Path) : NormalStorage(loc
         return when (slot.type) {
             SlotType.ACTIVE_AES_CTR_HMAC, SlotType.RETIRED_AES_CTR_HMAC -> {
                 FileDecryptor(
-                    slot.data.copyOfRange(0, 16),
-                    slot.data.copyOfRange(16, 32)
+                    slot.data.copyOfRange(0, AES_KEY_SIZE),
+                    slot.data.copyOfRange(AES_KEY_SIZE, AES_KEY_SIZE + HMAC_KEY_SIZE)
                 )
             }
             SlotType.ACTIVE_AES_WRAP, SlotType.RETIRED_AES_WRAP -> {
                 val wrappedKey = info.copyOfRange(2, info.size)
                 val unwrapped = unwrapSecretKeyFrom(wrappedKey, slot.data)
                 FileDecryptor(
-                    unwrapped.encoded.copyOfRange(0, 16),
-                    unwrapped.encoded.copyOfRange(16, 32)
+                    unwrapped.encoded.copyOfRange(0, AES_KEY_SIZE),
+                    unwrapped.encoded.copyOfRange(AES_KEY_SIZE, AES_KEY_SIZE + HMAC_KEY_SIZE)
                 )
             }
             else -> throw IllegalStateException()

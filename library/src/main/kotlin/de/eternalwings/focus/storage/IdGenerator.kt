@@ -2,6 +2,8 @@ package de.eternalwings.focus.storage
 
 /**
  * Generator for generating valid IDs that can be understood by OmniFocus.
+ * A valid ID is 11 characters long and contains only alphanumeric letters,
+ * with possibly mixed casing.
  */
 object IdGenerator {
     private val alphabet = ('0'..'9') + ('A'..'Z') + ('a'..'z')
