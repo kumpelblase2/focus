@@ -7,6 +7,7 @@ import de.eternalwings.focus.storage.FilenameConstants.CONTENT_FILE_NAME
 import de.eternalwings.focus.storage.data.Changeset
 import de.eternalwings.focus.storage.data.ChangesetFile
 import de.eternalwings.focus.storage.data.OmniContainer
+import de.eternalwings.focus.storage.data.xml.OmniContainerXmlConverter
 import de.eternalwings.focus.storage.plist.DictionaryObject
 import de.eternalwings.focus.storage.plist.Plist
 import org.jdom2.input.SAXBuilder
@@ -98,7 +99,7 @@ open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
     private fun parseFile(content: ByteArray): OmniContainer {
         val inputStreamFromBytes = ByteArrayInputStream(content)
         val xmlContent = xmlBuilder.build(inputStreamFromBytes)
-        return OmniContainer.fromXML(xmlContent)
+        return OmniContainerXmlConverter.read(xmlContent)
     }
 
     override fun getContentOfFile(file: ChangesetFile): ByteArray {
@@ -143,7 +144,7 @@ open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
 
     override fun save(changeset: Changeset) {
         val output = XMLOutputter(Format.getPrettyFormat())
-        val xmlDocument = changeset.container.toXML()
+        val xmlDocument = OmniContainerXmlConverter.write(changeset.container)
         val filename = changeset.createFilename()
         val byteOutput = ByteArrayOutputStream()
         ZipOutputStream(byteOutput).use {

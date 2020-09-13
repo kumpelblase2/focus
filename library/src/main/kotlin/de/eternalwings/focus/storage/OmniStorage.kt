@@ -1,6 +1,7 @@
 package de.eternalwings.focus.storage
 
 import de.eternalwings.focus.storage.data.*
+import de.eternalwings.focus.storage.data.xml.OmniContainerXmlConverter
 import de.eternalwings.focus.storage.plist.Plist
 import org.jdom2.output.Format
 import org.jdom2.output.XMLOutputter
@@ -174,7 +175,7 @@ interface OmniStorage {
 
         changeSets.forEach { changeset ->
             val output = XMLOutputter(Format.getPrettyFormat())
-            val xmlDocument = changeset.container.toXML()
+            val xmlDocument = OmniContainerXmlConverter.write(changeset.container)
             val filename = changeset.createFilename()
             ZipOutputStream(
                 Files.newOutputStream(

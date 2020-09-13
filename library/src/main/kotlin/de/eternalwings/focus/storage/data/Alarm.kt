@@ -2,8 +2,6 @@ package de.eternalwings.focus.storage.data
 
 import de.eternalwings.focus.Reference
 import de.eternalwings.focus.mergeInto
-import de.eternalwings.focus.storage.xml.*
-import org.jdom2.Element
 import java.time.ZonedDateTime
 
 /**
@@ -18,8 +16,7 @@ data class Alarm(
     val variant: String?,
     val fireAt: ZonedDateTime?,
     val repeatInterval: Long?
-) : ChangesetElement, WithOperation, WithCreationTimestamp,
-    Mergeable<Alarm> {
+) : ChangesetElement, WithOperation, WithCreationTimestamp, Mergeable<Alarm> {
 
     override var operation: Operation = Operation.CREATE
 
@@ -36,42 +33,4 @@ data class Alarm(
         )
     }
 
-    override fun toXML(): Element {
-        return Element(TAG_NAME, XmlConstants.NAMESPACE).also {
-            if (operation != Operation.CREATE) {
-                it.setAttribute("op", operation.name.toLowerCase())
-            }
-            it.setAttribute("id", id)
-
-            check(added != null) { "An alarm changeset entry always has an added date." }
-            val elem = dateElement("added", added)
-            order?.let { elem.setAttribute("order", order.toString()) }
-            it.addContent(elem)
-
-            task?.let { task -> it.addContent(referenceElement("task", task)) }
-            kind?.let { kind -> it.addContent(textElement("kind", kind)) }
-            variant?.let { variant -> it.addContent(textElement("variant", variant)) }
-            fireAt?.let { fireAt -> it.addContent(dateElement("fire-date", fireAt)) }
-            repeatInterval?.let { interval -> it.addContent(longElement("repeat-interval", interval)) }
-        }
-    }
-
-    companion object {
-        const val TAG_NAME = "alarm"
-
-        fun fromXML(element: Element): Alarm {
-            val operation = element.attr("op")?.toOperation() ?: Operation.CREATE
-            val id = element.getAttribute("id").value
-            val container = if(operation == Operation.REFERENCE) element.child("reference-snapshot")!! else element
-            val addedElement = container.child("added")
-            val added = addedElement?.value?.date()
-            val addedOrder = addedElement?.attr("order")?.toLong()
-            val task = container.reference("task")
-            val kind = container.text("kind")
-            val variant = container.text("variant")?.ifEmpty { null }
-            val fireDate = container.text("fire-date")?.date()
-            val repeatInterval = container.long("repeat-interval") ?: 0
-            return Alarm(id, added, addedOrder, task, kind, variant, fireDate, repeatInterval).also { it.operation = operation }
-        }
-    }
 }
