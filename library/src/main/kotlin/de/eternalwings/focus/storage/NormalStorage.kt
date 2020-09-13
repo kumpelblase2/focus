@@ -48,7 +48,7 @@ open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
         }
 
     private val lastChangesetId: String
-        get() = changeSetFiles.asSequence().maxBy { it.timestamp }!!.id
+        get() = changeSetFiles.maxByOrNull { it.timestamp }!!.id
 
     override fun removeDevice(clientId: String) {
         val deviceEntries = devices.filter { it.clientId == clientId }

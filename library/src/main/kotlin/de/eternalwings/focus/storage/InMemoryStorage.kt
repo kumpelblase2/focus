@@ -18,7 +18,7 @@ class InMemoryStorage(
         private set
 
     private val lastChangesetId: String
-        get() = changeSets.asSequence().maxBy { it.timestamp }!!.id
+        get() = changeSets.maxByOrNull { it.timestamp }!!.id
 
     override fun updateDevice(device: OmniDevice, refreshLastSync: Boolean) {
         val updatedDevice = if(refreshLastSync) {
@@ -30,7 +30,7 @@ class InMemoryStorage(
         devices += updatedDevice
 
         if(devices.size > 3) {
-            val changesetsForDevice = devices.filter { it.clientId == updatedDevice.clientId }
+            val changesetsForDevice = devices.asSequence().filter { it.clientId == updatedDevice.clientId }
             val sorted = changesetsForDevice.sortedByDescending { it.lastSync }
             val oldestKept = sorted.take(3).last()
             devices = devices.filter { it.clientId != updatedDevice.clientId || it.lastSync > oldestKept.lastSync }
