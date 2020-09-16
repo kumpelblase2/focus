@@ -15,7 +15,32 @@ import de.eternalwings.focus.query.QueryParser
 import de.eternalwings.focus.view.OmniFocusState
 import de.eternalwings.focus.view.OmniTask
 
-class QueryCommand : UnlockedStorageBasedCommand(name = "query", help = "Query the tasks in the omnifocus store") {
+class QueryCommand : UnlockedStorageBasedCommand(
+    name = "query", help = "Query the tasks in the omnifocus store", epilog = """
+    Querying allows searching the whole omnifocus database for task-like elements.
+    This includes not just tasks, but also projects, because they're basically the
+    same thing.
+    
+    This uses a simple query language to allow filtering for contexts, projects 
+    and properties of tasks. All tasks that match the criteria in the query will
+    be displayed.
+    
+    Select a specific context:
+        `@context` or `@{context with spaces}`
+    Select a specific project:
+        `#project` or `#{project with spaces}`
+    Select with a specific property:
+        `name:TaskName` or `name:{value with space}`
+    Select with a predefined shortcut:
+        `available`
+
+    You can then chain multiple together by separating them with a space. A full
+    query could thus look like this:
+        `#{Migrate to new Setup} @Home available`
+        -> Select all tasks in the project "Migrate to new Setup" which have the
+           context "Home" and is available
+""".trimIndent()
+) {
     val includeCompleted by option("-C", "--show-completed", help = "Include completed tasks").flag()
     val total by option("-t", "--total", help = "Display the total amount of tasks").flag()
     val query by argument("query", help = "The query to select tasks").default("")
@@ -50,7 +75,7 @@ class QueryCommand : UnlockedStorageBasedCommand(name = "query", help = "Query t
             println("Total: ${result.size}/${taskInstances.size} Tasks.")
         }
 
-        if(Configuration.instance.options.updateLastIds) {
+        if (Configuration.instance.options.updateLastIds) {
             val deviceId = Configuration.instance.device ?: return
             val device = storage.findDeviceById(deviceId) ?: return
             storage.updateDevice(device)

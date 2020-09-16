@@ -1,6 +1,6 @@
 # Focus
 
-Focus is two things: a cli to interact with OmniFocus databases, and a jvm library that you can use to implement custom functionality in your own program.
+Focus is two things: a cli to interact with OmniFocus databases, and a jvm library that you can use to interact with an omnifocus database from your own program.
 
 This readme will focus on the CLI. You can find another README in the library in this same repository if you'd like to know more about that.
 
