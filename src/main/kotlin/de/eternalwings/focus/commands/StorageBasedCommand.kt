@@ -1,6 +1,7 @@
 package de.eternalwings.focus.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.output.TermUi
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -11,7 +12,6 @@ import de.eternalwings.focus.failWith
 import de.eternalwings.focus.storage.EncryptedOmniStorage
 import de.eternalwings.focus.storage.OmniStorage
 import de.eternalwings.focus.storage.PhysicalOmniStorage
-import de.eternalwings.focus.warning
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -34,7 +34,11 @@ abstract class StorageBasedCommand(
     autoCompleteEnvvar,
     allowMultipleSubcommands
 ) {
-    val location by option("--location", "-l", help = "The location for the omnifocus file storage").path(mustExist = true, canBeFile = false)
+    val location by option(
+        "--location",
+        "-l",
+        help = "The location for the omnifocus file storage"
+    ).path(mustExist = true, canBeFile = false)
 
     fun loadStorage(): PhysicalOmniStorage {
         return OmniStorage.fromPath(getStorageLocation())
@@ -100,15 +104,6 @@ abstract class UnlockedStorageBasedCommand(
     }
 
     protected fun readPassword(): CharArray {
-        warning("The provided omnifocus storage is encrypted, please provide the password below.")
-        val console = System.console()
-        return if (console != null) {
-            console.readPassword("Password: ")
-        } else {
-            warning("Couldn't get access to a console! The input cannot be masked!")
-            print("Password: ")
-            // We don't need to close the input stream here
-            System.`in`.bufferedReader().readLine().toCharArray()
-        }
+        return TermUi.prompt("Password: ", hideInput = true)?.toCharArray() ?: charArrayOf()
     }
 }

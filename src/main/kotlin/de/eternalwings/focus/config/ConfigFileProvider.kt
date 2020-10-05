@@ -1,5 +1,6 @@
 package de.eternalwings.focus.config
 
+import com.github.ajalt.clikt.output.TermUi
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -14,15 +15,18 @@ object ConfigFileProvider {
     }
 
     private fun getConfigFolder() : Path {
-        val osName = System.getProperty("os.name")
-        var relativeConfigDir = Paths.get(System.getProperty("user.home"), ".config")
-        if(osName.toLowerCase().startsWith("windows")) {
-            relativeConfigDir = Paths.get("APPDATA")
-        } else if (!System.getenv("XDG_CONFIG_HOME").isNullOrEmpty()) {
-            relativeConfigDir = Paths.get(System.getenv("XDG_CONFIG_HOME"))
-        }
-
+        val relativeConfigDir = getConfigDirectory()
         return relativeConfigDir.resolve("focus")
+    }
+
+    private fun getConfigDirectory(): Path {
+        return if (TermUi.isWindows) {
+            Paths.get("APPDATA")
+        } else if (!System.getenv("XDG_CONFIG_HOME").isNullOrEmpty()) {
+            Paths.get(System.getenv("XDG_CONFIG_HOME"))
+        } else {
+            Paths.get(System.getProperty("user.home"), ".config")
+        }
     }
 
     fun createConfigurationFile() {
