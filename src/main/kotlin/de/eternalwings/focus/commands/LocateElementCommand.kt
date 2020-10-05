@@ -18,5 +18,7 @@ class LocateElementCommand :
         if(changesetIds.isEmpty()) {
             failWith("The element was not found in the store.", ErrorCodes.ELEMENT_NOT_FOUND)
         }
+
+        changesetIds.forEach { echo(it) }
     }
 }
