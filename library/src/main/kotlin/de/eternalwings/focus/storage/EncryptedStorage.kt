@@ -3,7 +3,7 @@ package de.eternalwings.focus.storage
 import de.eternalwings.focus.read
 import de.eternalwings.focus.readExpecting
 import de.eternalwings.focus.storage.data.Changeset
-import de.eternalwings.focus.storage.data.ChangesetFile
+import de.eternalwings.focus.storage.data.ChangesetDescription
 import de.eternalwings.focus.storage.encryption.*
 import de.eternalwings.focus.storage.encryption.EncryptionConstants.AES_KEY_SIZE
 import de.eternalwings.focus.storage.encryption.EncryptionConstants.FILE_MAC_LENGTH
@@ -83,9 +83,9 @@ class EncryptedStorage(location: Path, encryptionPath: Path) : NormalStorage(loc
         return aesWrap.unwrap(wrappedKey, "AES/CTR/NOPADDING", Cipher.SECRET_KEY) as SecretKey
     }
 
-    override fun createChangesetForFile(file: ChangesetFile): Changeset {
+    override fun getChangesetFor(description: ChangesetDescription): Changeset {
         check(unwrappedKeys.isNotEmpty()) { "No password was provided for encrypted store." }
-        return super.createChangesetForFile(file)
+        return super.getChangesetFor(description)
     }
 
     override fun unencryptedCopy(): OmniStorage {

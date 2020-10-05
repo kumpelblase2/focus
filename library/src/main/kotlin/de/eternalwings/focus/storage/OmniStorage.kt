@@ -23,15 +23,10 @@ interface PhysicalOmniStorage : OmniStorage {
     val location: Path
 
     /**
-     * The files that contain the changesets of this storage
-     */
-    val changeSetFiles: List<ChangesetFile>
-
-    /**
      * Returns the data inside the given changeset. Normal changesets are zip files containing an xml file. This
      * returns the contents of that xml file.
      */
-    fun getContentOfFile(file: ChangesetFile): ByteArray
+    fun getContentOfChangeset(changeset: ChangesetDescription): ByteArray
 
     /**
      * Save the given changeset in the physical storage location.
@@ -80,8 +75,24 @@ interface OmniStorage {
 
     /**
      * The changesets (or "transactions") that are present in this storage.
+     * This is a relatively expensive operation as it will read all the changesets,
+     * their content (and optionally decrypt it) and parse it into our data
+     * structures. Please prefer using [getChangesetFor] instead for specific
+     * changesets if possible.
      */
     val changeSets: List<Changeset>
+        get() = changesetInformation.map { getChangesetFor(it) }
+
+    /**
+     * List of all available changesets in order
+     */
+    val changesetInformation: List<ChangesetDescription>
+
+    /**
+     * Reads the changeset for the given changeset description. This includes
+     * parsing the content of that changeset.
+     */
+    fun getChangesetFor(description: ChangesetDescription): Changeset
 
     /**
      * Registers a new device in this storage which can then be used to track
@@ -95,7 +106,7 @@ interface OmniStorage {
             throw IllegalArgumentException("A device with the given ID already exists. Did you mean to update it?")
         }
 
-        val tailIds = changeSets.asSequence().sortedByDescending { it.timestamp }.first()
+        val tailIds = changesetInformation.first()
         this.updateDevice(device.copy(tailIds = listOf(tailIds.id)))
     }
 
@@ -130,12 +141,14 @@ interface OmniStorage {
      * store yet; use [appendChangeset] for that.
      */
     fun prepareChangeset(creator: OmniDevice, vararg elements: ChangesetElement): Changeset {
-        val id = IdGenerator.generate(changeSets.map { it.id }.toSet())
+        val changesets = changesetInformation
+        val id = IdGenerator.generate(changesets.map { it.id }.toSet())
         return Changeset(
-            LocalDateTime.now(),
-            id,
-            changeSets.last().id,
-            OmniContainer(ContentCreator.fromDevice(creator), listOf(*elements))
+            SimpleChangesetDescription(id, changesets.last().id, LocalDateTime.now()),
+            OmniContainer(
+                ContentCreator.fromDevice(creator),
+                listOf(*elements)
+            )
         )
     }
 
@@ -176,7 +189,7 @@ interface OmniStorage {
         changeSets.forEach { changeset ->
             val output = XMLOutputter(Format.getPrettyFormat())
             val xmlDocument = OmniContainerXmlConverter.write(changeset.container)
-            val filename = changeset.createFilename()
+            val filename = ChangesetFilenameParser.toFilename(changeset.description)
             ZipOutputStream(
                 Files.newOutputStream(
                     location.resolve(filename), StandardOpenOption.CREATE,

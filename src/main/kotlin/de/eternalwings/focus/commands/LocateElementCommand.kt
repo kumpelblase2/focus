@@ -13,7 +13,7 @@ class LocateElementCommand :
         val storage = getUnlockedStorage()
         val changesetIds =
             storage.changeSets.asSequence().filter { changeset -> changeset.container.content.any { it.id == id } }
-                .map { it.id }.toList()
+                .map { it.description.id }.toList()
 
         if(changesetIds.isEmpty()) {
             failWith("The element was not found in the store.", ErrorCodes.ELEMENT_NOT_FOUND)

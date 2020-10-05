@@ -4,9 +4,7 @@ import de.eternalwings.focus.storage.FilenameConstants.CAPABILITY_FILE_NAME
 import de.eternalwings.focus.storage.FilenameConstants.CLIENT_FILE_DATE_FORMAT
 import de.eternalwings.focus.storage.FilenameConstants.CLIENT_FILE_NAME
 import de.eternalwings.focus.storage.FilenameConstants.CONTENT_FILE_NAME
-import de.eternalwings.focus.storage.data.Changeset
-import de.eternalwings.focus.storage.data.ChangesetFile
-import de.eternalwings.focus.storage.data.OmniContainer
+import de.eternalwings.focus.storage.data.*
 import de.eternalwings.focus.storage.data.xml.OmniContainerXmlConverter
 import de.eternalwings.focus.storage.plist.DictionaryObject
 import de.eternalwings.focus.storage.plist.Plist
@@ -20,7 +18,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.time.OffsetDateTime
-import java.util.stream.Collectors
 import java.util.stream.Stream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
@@ -28,15 +25,6 @@ import java.util.zip.ZipOutputStream
 import kotlin.streams.toList
 
 open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
-    private val fileChangesets: List<Changeset> by lazy {
-        changeSetFiles.stream()
-            .map(this::createChangesetForFile)
-            .collect(Collectors.toList())
-    }
-
-    override val changeSets: List<Changeset>
-        get() = (fileChangesets + transientChangesets).sortedBy { it.timestamp }
-
     private var transientChangesets: List<Changeset> = emptyList()
 
     private val OmniDevice.file: Path
@@ -47,8 +35,42 @@ open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
             return CLIENT_FILE_DATE_FORMAT.format(this.lastSync) + "=" + this.clientId + CLIENT_FILE_NAME
         }
 
+    private val changeSetFiles: List<FileChangesetDescription>
+        get() {
+            return Files.list(location)
+                .filter { Files.isRegularFile(it) }
+                .flatMap {
+                    val file = FileChangesetDescription.fromFile(it)
+                    if (file == null) Stream.empty()
+                    else Stream.of(file)
+                }
+                .sorted(Comparator.comparing(FileChangesetDescription::timestamp))
+                .toList()
+        }
+
     private val lastChangesetId: String
-        get() = changeSetFiles.maxByOrNull { it.timestamp }!!.id
+        get() = changesetInformation.maxByOrNull { it.timestamp }!!.id
+
+    override val changesetInformation: List<ChangesetDescription>
+        get() = changeSetFiles + transientChangesets.map { it.description }
+
+    override val devices: Collection<OmniDevice>
+        get() {
+            return Files.list(location)
+                .filter { it.fileName.toString().endsWith(CLIENT_FILE_NAME) }
+                .map { Plist.parsePlist(it) }
+                .map { OmniDevice.fromPlist(it as DictionaryObject) }
+                .toList()
+        }
+
+    override val capabilities: Collection<OmniCapability>
+        get() {
+            return Files.list(location)
+                .filter { it.fileName.toString().endsWith(CAPABILITY_FILE_NAME) }
+                .map { Plist.parsePlist(it) }
+                .map { OmniCapability.fromPlist(it as DictionaryObject) }
+                .toList()
+        }
 
     override fun removeDevice(clientId: String) {
         val deviceEntries = devices.filter { it.clientId == clientId }
@@ -70,30 +92,12 @@ open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
 
         val deviceChangesets = devices.filter { it.clientId == deviceId }
         if (deviceChangesets.count() > 3) {
-            // Only persist the most recent 3 changesets
+            // Only persist the most recent 3 device changesets
             val sorted = deviceChangesets.sortedByDescending { it.lastSync }
             for (i in 3 until sorted.size) {
                 removeDeviceChangeset(sorted[i])
             }
         }
-    }
-
-    override val changeSetFiles: List<ChangesetFile>
-        get() {
-            return Files.list(location)
-                .filter { Files.isRegularFile(it) }
-                .flatMap {
-                    val file = ChangesetFile.fromFile(it)
-                    if (file == null) Stream.empty()
-                    else Stream.of(file)
-                }
-                .sorted(Comparator.comparing(ChangesetFile::timestamp))
-                .toList()
-        }
-
-    protected open fun createChangesetForFile(file: ChangesetFile): Changeset {
-        val content = getContentOfFile(file)
-        return Changeset(file.timestamp, file.id, file.previousId, parseFile(content))
     }
 
     private fun parseFile(content: ByteArray): OmniContainer {
@@ -102,8 +106,8 @@ open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
         return OmniContainerXmlConverter.read(xmlContent)
     }
 
-    override fun getContentOfFile(file: ChangesetFile): ByteArray {
-        getContentOfFile(file.path).use {
+    override fun getContentOfChangeset(changeset: ChangesetDescription): ByteArray {
+        getContentOfFile(getFileForChangeset(changeset)).use {
             val next = it.nextEntry
             if (!next.name!!.contentEquals(CONTENT_FILE_NAME)) {
                 throw IllegalStateException("Got non-content file in zip")
@@ -112,27 +116,17 @@ open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
         }
     }
 
+    private fun getFileForChangeset(changeset: ChangesetDescription): Path {
+        if(changeset is FileChangesetDescription) {
+            return changeset.path
+        }
+
+        return location.resolve("${changeset.timestamp}=${changeset.previousId}+${changeset.id}.zip")
+    }
+
     protected open fun getContentOfFile(file: Path): ZipInputStream {
         return ZipInputStream(FileInputStream(file.toFile()))
     }
-
-    override val devices: Collection<OmniDevice>
-        get() {
-            return Files.list(location)
-                .filter { it.fileName.toString().endsWith(CLIENT_FILE_NAME) }
-                .map { Plist.parsePlist(it) }
-                .map { OmniDevice.fromPlist(it as DictionaryObject) }
-                .toList()
-        }
-
-    override val capabilities: Collection<OmniCapability>
-        get() {
-            return Files.list(location)
-                .filter { it.fileName.toString().endsWith(CAPABILITY_FILE_NAME) }
-                .map { Plist.parsePlist(it) }
-                .map { OmniCapability.fromPlist(it as DictionaryObject) }
-                .toList()
-        }
 
     override fun appendChangeset(changeset: Changeset, persist: Boolean) {
         if (persist) {
@@ -145,7 +139,7 @@ open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
     override fun save(changeset: Changeset) {
         val output = XMLOutputter(Format.getPrettyFormat())
         val xmlDocument = OmniContainerXmlConverter.write(changeset.container)
-        val filename = changeset.createFilename()
+        val filename = ChangesetFilenameParser.toFilename(changeset.description)
         val byteOutput = ByteArrayOutputStream()
         ZipOutputStream(byteOutput).use {
             it.putNextEntry(ZipEntry(CONTENT_FILE_NAME))
@@ -153,6 +147,11 @@ open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
             it.closeEntry()
         }
         createChangesetFile(filename, byteOutput.toByteArray())
+    }
+
+    override fun getChangesetFor(description: ChangesetDescription): Changeset {
+        val content = getContentOfChangeset(description)
+        return Changeset(description, parseFile(content))
     }
 
     protected open fun createChangesetFile(filename: String, output: ByteArray) {

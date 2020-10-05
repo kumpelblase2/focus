@@ -14,10 +14,10 @@ class ShowFileCommand : UnlockedStorageBasedCommand(
 
     override fun run() {
         val storage = getUnlockedStorage()
-        val foundFile = storage.changeSetFiles.find { it.id == id }
+        val foundChangeset = storage.changesetInformation.find { it.id == id }
             ?: failWith("No such file found.", ErrorCodes.GENERIC_ARGUMENT_ERROR)
 
-        val content = String(storage.getContentOfFile(foundFile), StandardCharsets.UTF_8)
+        val content = String(storage.getContentOfChangeset(foundChangeset), StandardCharsets.UTF_8)
         print(content)
     }
 }

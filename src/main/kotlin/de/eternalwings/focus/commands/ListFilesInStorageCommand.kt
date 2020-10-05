@@ -7,7 +7,7 @@ class ListFilesInStorageCommand :
 
     override fun run() {
         val storage = loadStorage()
-        storage.changeSetFiles.forEach { file ->
+        storage.changesetInformation.forEach { file ->
             val timestampValue = if (file.timestamp == LocalDateTime.MIN) {
                 "<Initial>\t"
             } else {

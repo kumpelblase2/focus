@@ -1,6 +1,5 @@
 package de.eternalwings.focus.storage.data
 
-import de.eternalwings.focus.storage.FilenameConstants
 import java.time.LocalDateTime
 
 /**
@@ -11,19 +10,9 @@ import java.time.LocalDateTime
  *
  */
 data class Changeset(
-    val timestamp: LocalDateTime,
-    val id: String,
-    val previousId: String,
+    val description: ChangesetDescription,
     val container: OmniContainer
 ) {
-    val isRootChangeset = timestamp == LocalDateTime.MIN
-
-    fun createFilename(): String {
-        return if (isRootChangeset) {
-            FilenameConstants.CHANGESET_INIT_TIMESTAMP
-        } else {
-            FilenameConstants.CHANGESET_TIME_FORMAT.format(timestamp)
-        } + "=" + previousId + "+" + id + ".zip"
-    }
+    val isRootChangeset = description.timestamp == LocalDateTime.MIN
 }
 
