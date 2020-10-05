@@ -73,14 +73,15 @@ abstract class UnlockedStorageBasedCommand(
     protected fun getUnlockedStorage(): PhysicalOmniStorage {
         val storage = loadStorage()
         if (storage is EncryptedOmniStorage) {
-            val password = getPassword()
+            val password = getPassword(storage.location)
             storage.providePassword(password)
         }
         return storage
     }
 
-    protected fun getPassword(): CharArray {
-        return if (Configuration.instance.password != null) {
+    protected fun getPassword(storagePath: Path): CharArray {
+        val matchesLocation = Configuration.instance.location?.let { storagePath == Paths.get(it) } ?: false
+        return if (Configuration.instance.password != null && matchesLocation) {
             Configuration.instance.password!!.toCharArray()
         } else {
             if (readPassword) {
