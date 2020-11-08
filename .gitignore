@@ -3,3 +3,5 @@ example_files/
 .gradle/
 /build/
 /library/build/
+
+.attach*
