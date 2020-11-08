@@ -1,13 +1,12 @@
 package de.eternalwings.focus.storage.data
 
 import de.eternalwings.focus.storage.FilenameConstants
+import de.eternalwings.focus.storage.FilenameConstants.CHANGESET_FILE_REGEX
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDateTime
 
 object ChangesetFilenameParser {
-    private val CHANGESET_FILE_REGEX = "^(\\d{14})=(.{11})\\+(.{11})\\.zip$".toRegex()
-
     fun getInformationOf(path: Path): ChangesetDescription? {
         if (!Files.exists(path)) return null
 

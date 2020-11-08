@@ -41,4 +41,6 @@ object FilenameConstants {
      * which should be the same as the [CHANGESET_TIME_FORMAT]
      */
     val CLIENT_FILE_DATE_FORMAT: DateTimeFormatter = CHANGESET_TIME_FORMAT
+
+    val CHANGESET_FILE_REGEX = "^(\\d{14})=(.{11})\\+(.{11})\\.zip$".toRegex()
 }
