@@ -32,7 +32,7 @@ abstract class OmniTasklike : Referencable {
 
     val parents: List<OmniTasklike>
         get() {
-            return if(parent == null) {
+            return if (parent == null) {
                 emptyList()
             } else {
                 val parentsParents = parent?.parents ?: emptyList()

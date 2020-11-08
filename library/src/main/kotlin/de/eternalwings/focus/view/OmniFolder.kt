@@ -6,16 +6,31 @@ import de.eternalwings.focus.storage.data.Folder
 import de.eternalwings.focus.storage.data.Operation
 import java.time.ZonedDateTime
 
-data class OmniFolder(
+class OmniFolder(
     override val id: String,
-    val parent: OmniFolder?,
-    val creation: Creation,
-    val name: String,
-    val note: String = "",
-    val rank: Long? = null,
-    val hidden: Boolean = false,
-    val modified: ZonedDateTime? = null
+    parent: OmniFolder?,
+    creation: Creation,
+    name: String,
+    note: String = "",
+    rank: Long? = null,
+    hidden: Boolean = false,
+    modified: ZonedDateTime? = null
 ) : Referencable {
+
+    var parent: OmniFolder? = parent
+        private set
+    var creation: Creation = creation
+        private set
+    var name: String = name
+        private set
+    var note: String = note
+        private set
+    var rank: Long? = rank
+        private set
+    var hidden: Boolean = hidden
+        private set
+    var modified: ZonedDateTime? = modified
+        private set
 
     constructor(folder: Folder, resolveParent: (String) -> OmniFolder) : this(
         folder.id,
@@ -56,7 +71,7 @@ data class OmniFolder(
         ).apply { operation = Operation.UPDATE }
     }
 
-    fun diffForReference(myReference: Referencable?, reference: Referencable?): Reference? {
+    private fun diffForReference(myReference: Referencable?, reference: Referencable?): Reference? {
         return if (myReference == null) {
             reference?.let { Reference() }
         } else {
@@ -66,5 +81,33 @@ data class OmniFolder(
                 null
             }
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is OmniFolder) return false
+
+        if (id != other.id) return false
+        if (parent != other.parent) return false
+        if (creation != other.creation) return false
+        if (name != other.name) return false
+        if (note != other.note) return false
+        if (rank != other.rank) return false
+        if (hidden != other.hidden) return false
+        if (modified != other.modified) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + (parent?.hashCode() ?: 0)
+        result = 31 * result + creation.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + note.hashCode()
+        result = 31 * result + (rank?.hashCode() ?: 0)
+        result = 31 * result + hidden.hashCode()
+        result = 31 * result + (modified?.hashCode() ?: 0)
+        return result
     }
 }

@@ -174,14 +174,13 @@ interface OmniStorage {
         check(Files.isDirectory(location)) { "Specified location is not a directory" }
 
         capabilities.forEach { capability ->
-            val filename = capability.name + FilenameConstants.CAPABILITY_FILE_NAME
+            val filename = FileHelper.formatCapabilityFileName(capability.name)
             val resultingFile = Files.createFile(location.resolve(filename))
             Plist.writePlist(capability.toPlist(), resultingFile)
         }
 
         devices.forEach { device ->
-            val filename =
-                FilenameConstants.CLIENT_FILE_DATE_FORMAT.format(device.lastSync) + "=" + device.clientId + FilenameConstants.CLIENT_FILE_NAME
+            val filename = FileHelper.formatClientFileName(device.clientId, device.lastSync)
             val resultingFile = Files.createFile(location.resolve(filename))
             Plist.writePlist(device.toPlist(), resultingFile)
         }

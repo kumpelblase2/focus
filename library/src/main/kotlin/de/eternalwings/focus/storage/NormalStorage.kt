@@ -1,8 +1,5 @@
 package de.eternalwings.focus.storage
 
-import de.eternalwings.focus.storage.FilenameConstants.CAPABILITY_FILE_NAME
-import de.eternalwings.focus.storage.FilenameConstants.CLIENT_FILE_DATE_FORMAT
-import de.eternalwings.focus.storage.FilenameConstants.CLIENT_FILE_NAME
 import de.eternalwings.focus.storage.FilenameConstants.CONTENT_FILE_NAME
 import de.eternalwings.focus.storage.data.*
 import de.eternalwings.focus.storage.data.xml.OmniContainerXmlConverter
@@ -28,11 +25,9 @@ open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
     private var transientChangesets: List<Changeset> = emptyList()
 
     private val OmniDevice.file: Path
-        get() = location.resolve(fileName)
-
-    private val OmniDevice.fileName: String
         get() {
-            return CLIENT_FILE_DATE_FORMAT.format(this.lastSync) + "=" + this.clientId + CLIENT_FILE_NAME
+            val filename = FileHelper.formatClientFileName(clientId, lastSync)
+            return location.resolve(filename)
         }
 
     private val changeSetFiles: List<FileChangesetDescription>
@@ -57,7 +52,7 @@ open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
     override val devices: Collection<OmniDevice>
         get() {
             return Files.list(location)
-                .filter { it.fileName.toString().endsWith(CLIENT_FILE_NAME) }
+                .filter { FileHelper.isClientFile(it) }
                 .map { Plist.parsePlist(it) }
                 .map { OmniDevice.fromPlist(it as DictionaryObject) }
                 .toList()
@@ -66,7 +61,7 @@ open class NormalStorage(override val location: Path) : PhysicalOmniStorage {
     override val capabilities: Collection<OmniCapability>
         get() {
             return Files.list(location)
-                .filter { it.fileName.toString().endsWith(CAPABILITY_FILE_NAME) }
+                .filter { FileHelper.isCapabilityFile(it) }
                 .map { Plist.parsePlist(it) }
                 .map { OmniCapability.fromPlist(it as DictionaryObject) }
                 .toList()
