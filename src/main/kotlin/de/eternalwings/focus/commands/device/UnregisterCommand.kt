@@ -1,14 +1,17 @@
-package de.eternalwings.focus.commands
+package de.eternalwings.focus.commands.device
 
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import de.eternalwings.focus.commands.StorageBasedCommand
+import de.eternalwings.focus.commands.WithDeviceNameCommand
 import de.eternalwings.focus.config.Configuration
 import de.eternalwings.focus.prompt
 
 class UnregisterCommand :
-    StorageBasedCommand(name = "unregister", help = "Removes a client registration from the store"), WithDeviceNameCommand {
+    StorageBasedCommand(name = "unregister", help = "Removes a client registration from the store"),
+    WithDeviceNameCommand {
 
     override val deviceName by argument("name").optional()
     val confirm by option("--yes", "-y", help = "Confirm removal automatically").flag()

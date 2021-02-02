@@ -4,6 +4,10 @@ import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.parser.Parser
 
+/**
+ * A query parser to parse queries that look like
+ *  `@context @{context with space} #project #{project with space} property:value property:{value} available`
+ */
 object QueryParser : Grammar<TaskQuery>() {
     private val at by token("@")
     private val hash by token("#")

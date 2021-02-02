@@ -1,4 +1,4 @@
-package de.eternalwings.focus.commands
+package de.eternalwings.focus.commands.storage
 
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.optional
@@ -6,6 +6,7 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.long
+import de.eternalwings.focus.commands.StorageBasedCommand
 import de.eternalwings.focus.storage.watcher.PollingChangesetWatcher
 import de.eternalwings.focus.storage.watcher.WatchserviceChangesetWatcher
 

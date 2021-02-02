@@ -1,5 +1,6 @@
-package de.eternalwings.focus.commands
+package de.eternalwings.focus.commands.storage
 
+import de.eternalwings.focus.commands.StorageBasedCommand
 import java.time.LocalDateTime
 
 class ListFilesInStorageCommand :

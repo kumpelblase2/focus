@@ -1,8 +1,9 @@
-package de.eternalwings.focus.commands
+package de.eternalwings.focus.commands.storage
 
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.types.path
 import de.eternalwings.focus.ErrorCodes
+import de.eternalwings.focus.commands.UnlockedStorageBasedCommand
 import de.eternalwings.focus.failWith
 import de.eternalwings.focus.storage.EncryptedOmniStorage
 import java.nio.file.Files

@@ -1,4 +1,4 @@
-package de.eternalwings.focus.commands
+package de.eternalwings.focus.commands.task
 
 import de.eternalwings.focus.view.OmniTask
 import java.time.ZonedDateTime

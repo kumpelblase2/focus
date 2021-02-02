@@ -1,7 +1,9 @@
-package de.eternalwings.focus.commands
+package de.eternalwings.focus.commands.device
 
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.optional
+import de.eternalwings.focus.commands.StorageBasedCommand
+import de.eternalwings.focus.commands.WithDeviceIdCommand
 
 class RefreshDeviceCommand : StorageBasedCommand(name = "refresh", help = "Updates a device to the newest changeset"),
     WithDeviceIdCommand {

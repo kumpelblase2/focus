@@ -1,7 +1,8 @@
-package de.eternalwings.focus.commands
+package de.eternalwings.focus.commands.storage
 
 import com.github.ajalt.clikt.parameters.arguments.argument
 import de.eternalwings.focus.ErrorCodes
+import de.eternalwings.focus.commands.UnlockedStorageBasedCommand
 import de.eternalwings.focus.failWith
 import java.nio.charset.StandardCharsets
 

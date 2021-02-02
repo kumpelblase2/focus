@@ -1,4 +1,4 @@
-package de.eternalwings.focus.commands
+package de.eternalwings.focus.commands.perspective
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument

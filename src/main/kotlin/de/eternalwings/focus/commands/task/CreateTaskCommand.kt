@@ -1,8 +1,10 @@
-package de.eternalwings.focus.commands
+package de.eternalwings.focus.commands.task
 
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.option
+import de.eternalwings.focus.commands.UnlockedStorageBasedCommand
+import de.eternalwings.focus.commands.WithDeviceCommand
 import de.eternalwings.focus.view.OmniFocusState
 import de.eternalwings.focus.view.OmniTask
 

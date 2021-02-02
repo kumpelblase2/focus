@@ -1,4 +1,4 @@
-package de.eternalwings.focus.commands
+package de.eternalwings.focus.commands.device
 
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.defaultLazy
@@ -7,6 +7,7 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import de.eternalwings.focus.ErrorCodes
 import de.eternalwings.focus.HostnameResolver
+import de.eternalwings.focus.commands.StorageBasedCommand
 import de.eternalwings.focus.config.Configuration
 import de.eternalwings.focus.failWith
 import de.eternalwings.focus.storage.IdGenerator
@@ -28,7 +29,7 @@ class RegisterCommand :
 
     override fun run() {
         val storage = loadStorage()
-        val idToUse = id ?: generateValidId(storage.devices.map { it.clientId }.toSet())
+        val idToUse = id ?: IdGenerator.generate(storage.devices.map { it.clientId }.toSet())
 
         if (idToUse.length != 11) {
             failWith(
@@ -44,14 +45,5 @@ class RegisterCommand :
             println("Now using device '${device.name}' as author of changes.")
             Configuration.save()
         }
-    }
-
-    private fun generateValidId(takenIds: Collection<String>): String {
-        var generatedId: String
-        do {
-            generatedId = IdGenerator.generate()
-        } while(takenIds.contains(generatedId))
-
-        return generatedId
     }
 }

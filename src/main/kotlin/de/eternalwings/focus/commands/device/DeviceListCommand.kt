@@ -1,8 +1,9 @@
-package de.eternalwings.focus.commands
+package de.eternalwings.focus.commands.device
 
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
-import de.eternalwings.focus.presentation.GsonProvider
+import de.eternalwings.focus.commands.StorageBasedCommand
+import de.eternalwings.focus.presentation.JsonDataPrinter
 import de.eternalwings.focus.storage.OmniDevice
 
 data class DeviceHistory(val current: OmniDevice, val previous: List<OmniDevice>)
@@ -12,7 +13,6 @@ class DeviceListCommand :
 
     private val json by option("-j", "--json", help = "If the output should be printed as json").flag()
     private val full by option("--full", help = "Include recorded device history").flag()
-    private val gson = GsonProvider.INSTANCE
 
     override fun run() {
         val storage = loadStorage()
@@ -32,7 +32,7 @@ class DeviceListCommand :
 
     private fun printNormal(allDevices: List<OmniDevice>) {
         if (json) {
-            println(gson.toJson(allDevices))
+            JsonDataPrinter.print(allDevices)
         } else {
             allDevices.forEach { device ->
                 println("Device ${device.clientId}: ${device.name} (${device.model}) Last Sync: ${device.lastSync}")
@@ -42,7 +42,7 @@ class DeviceListCommand :
 
     private fun printFull(allDevices: List<DeviceHistory>) {
         if (json) {
-            println(gson.toJson(allDevices))
+            JsonDataPrinter.print(allDevices)
         } else {
             allDevices.forEach { (current, history) ->
                 println("Device ${current.clientId}: ${current.name} (${current.model}) Last Sync: ${current.lastSync}")

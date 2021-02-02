@@ -1,4 +1,4 @@
-package de.eternalwings.focus.commands
+package de.eternalwings.focus.commands.task
 
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
